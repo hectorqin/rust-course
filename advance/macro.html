@@ -262,14 +262,26 @@ macro_rules! vec {
 <h4 id="模式解析"><a class="header" href="#模式解析">模式解析</a></h4>
 <p>而现在，我们先来简单讲解下 <code>( $( $x:expr ),* )</code> 的含义。</p>
 <p>首先，我们使用圆括号 <code>()</code> 将整个宏模式包裹其中。紧随其后的是 <code>$()</code>，跟括号中模式相匹配的值(传入的 Rust 源代码)会被捕获，然后用于代码替换。在这里，模式 <code>$x:expr</code> 会匹配任何 Rust 表达式并给予该模式一个名称：<code>$x</code>。</p>
-<p><code>$()</code> 之后的逗号说明在 <code>$()</code> 所匹配的代码的后面会有一个可选的逗号分隔符，紧随逗号之后的 <code>*</code> 说明 <code>*</code> 之前的模式会被匹配零次或任意多次(类似正则表达式)。</p>
+<p><code>$()</code> 之后的逗号说明 <code>$()</code> 所匹配的代码使用逗号分隔符分割，紧随逗号之后的 <code>*</code> 说明 <code>*</code> 之前的模式(<code>$()</code>内的部分)会被匹配零次或任意多次(类似正则表达式)(且以逗号分割)。</p>
 <p>当我们使用 <code>vec![1, 2, 3]</code> 来调用该宏时，<code>$x</code> 模式将被匹配三次，分别是 <code>1</code>、<code>2</code>、<code>3</code>。为了帮助大家巩固，我们再来一起过一下：</p>
 <ol>
 <li><code>$()</code> 中包含的是模式 <code>$x:expr</code>，该模式中的 <code>expr</code> 表示会匹配任何 Rust 表达式，并给予该模式一个名称 <code>$x</code></li>
 <li>因此 <code>$x</code> 模式可以跟整数 <code>1</code> 进行匹配，也可以跟字符串 "hello" 进行匹配: <code>vec!["hello", "world"]</code></li>
-<li><code>$()</code> 之后的逗号，意味着<code>1</code> 和 <code>2</code> 之间可以使用逗号进行分割，也意味着 <code>3</code> 既可以没有逗号，也可以有逗号：<code>vec![1, 2, 3,]</code></li>
+<li><code>$()</code> 之后的逗号，意味着 <code>1</code> 、 <code>2</code> 和 <code>3</code> 之间使用逗号进行分割</li>
 <li><code>*</code> 说明之前的模式可以出现零次也可以任意次，这里出现了三次</li>
 </ol>
+<p><strong>需要注意的是，此处简化的 <code>vec!</code> 实现中， <code>3</code> 后面是不能继续接逗号的( <code>vec![1, 2, 3]</code> 合法，但 <code>vec![1, 2, 3,]</code> 不合法)，要匹配最后一个可有可无的逗号，可参考Rust官方的 <code>vec!</code> 宏定义，关键代码如下：</strong></p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>($($x:expr),+ $(,)?) =&gt; (
+    &lt;[_]&gt;::into_vec(
+        // This rustc_box is not required, but it produces a dramatic improvement in compile
+        // time when constructing arrays with many elements.
+        #[rustc_box]
+        $crate::boxed::Box::new([$($x),+])
+    )
+);
+<span class="boring">}</span></code></pre></pre>
 <p>接下来，我们再来看看与模式相关联、在 <code>=&gt;</code> 之后的代码：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

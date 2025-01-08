@@ -403,7 +403,7 @@ help: consider introducing a named lifetime parameter // 考虑引入一个生�
 </code></pre>
 <p>主要问题就在于，<code>result</code> 在函数结束后就被释放，但是在函数结束后，对 <code>result</code> 的引用依然在继续。在这种情况下，没有办法指定合适的生命周期来让编译通过，因此我们也就在 Rust 中避免了悬垂引用。</p>
 <p>那遇到这种情况该怎么办？最好的办法就是返回内部字符串的所有权，然后把字符串的所有权转移给调用者：</p>
-<pre><pre class="playground"><code class="language-rust edition2021">fn longest&lt;'a&gt;(_x: &amp;str, _y: &amp;str) -&gt; String {
+<pre><pre class="playground"><code class="language-rust edition2021">fn longest(_x: &amp;str, _y: &amp;str) -&gt; String {
     String::from("really long string")
 }
 

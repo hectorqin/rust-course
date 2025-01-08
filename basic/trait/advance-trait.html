@@ -186,7 +186,7 @@
 <p>特征之于 Rust 更甚于接口之于其他语言，因此特征在 Rust 中很重要也相对较为复杂，我们决定把特征分为两篇进行介绍，<a href="https://course.rs/basic/trait/trait.html">第一篇</a>在之前已经讲过，现在就是第二篇：关于特征的进阶篇，会讲述一些不常用到但是你该了解的特性。</p>
 <h2 id="关联类型"><a class="header" href="#关联类型">关联类型</a></h2>
 <p>在方法一章中，我们讲到了<a href="https://course.rs/basic/method#%E5%85%B3%E8%81%94%E5%87%BD%E6%95%B0">关联函数</a>，但是实际上关联类型和关联函数并没有任何交集，虽然它们的名字有一半的交集。</p>
-<p>关联类型是在特征定义的语句块中，申明一个自定义类型，这样就可以在特征的方法签名中使用该类型：</p>
+<p>关联类型是在特征定义的语句块中，声明一个自定义类型，这样就可以在特征的方法签名中使用该类型：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub trait Iterator {

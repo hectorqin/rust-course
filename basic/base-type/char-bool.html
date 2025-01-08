@@ -197,7 +197,7 @@
 <p>由于 <code>Unicode</code> 都是 4 个字节编码，因此字符类型也是占用 4 个字节：</p>
 <pre><pre class="playground"><code class="language-rust edition2021">fn main() {
     let x = '中';
-    println!("字符'中'占用了{}字节的内存大小",std::mem::size_of_val(&amp;x));
+    println!("字符'中'占用了{}字节的内存大小", size_of_val(&amp;x));
 }</code></pre></pre>
 <p>输出如下:</p>
 <pre><code class="language-console">$ cargo run
