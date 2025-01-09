@@ -311,7 +311,7 @@ fn main() {
 <h3 id="--运算符到哪去了"><a class="header" href="#--运算符到哪去了"><code>-&gt;</code> 运算符到哪去了？</a></h3>
 <p>在 C/C++ 语言中，有两个不同的运算符来调用方法：<code>.</code> 直接在对象上调用方法，而 <code>-&gt;</code> 在一个对象的指针上调用方法，这时需要先解引用指针。换句话说，如果 <code>object</code> 是一个指针，那么 <code>object-&gt;something()</code> 和 <code>(*object).something()</code> 是一样的。</p>
 <p>Rust 并没有一个与 <code>-&gt;</code> 等效的运算符；相反，Rust 有一个叫 <strong>自动引用和解引用</strong>的功能。方法调用是 Rust 中少数几个拥有这种行为的地方。</p>
-<p>他是这样工作的：当使用 <code>object.something()</code> 调用方法时，Rust 会自动为 <code>object</code> 添加 <code>&amp;</code>、<code>&amp;mut</code> 或 <code>*</code> 以便使 <code>object</code> 与方法签名匹配。也就是说，这些代码是等价的：</p>
+<p>他是这样工作的：当使用 <code>object.something()</code> 调用方法时，Rust 会自动为 <code>object</code> 添加 <code>&amp;</code>（视可见性添加<code>&amp;mut</code>)、 <code>*</code> 以便使 <code>object</code> 与方法签名匹配。也就是说，这些代码是等价的：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">#[derive(Debug,Copy,Clone)]

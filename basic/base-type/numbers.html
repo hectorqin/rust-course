@@ -204,7 +204,7 @@
 <p>每个有符号类型规定的数字范围是 -(2<sup>n - 1</sup>) ~ 2<sup>n -
 1</sup> - 1，其中 <code>n</code> 是该定义形式的位长度。因此 <code>i8</code> 可存储数字范围是 -(2<sup>7</sup>) ~ 2<sup>7</sup> - 1，即 -128 ~ 127。无符号类型可以存储的数字范围是 0 ~ 2<sup>n</sup> - 1，所以 <code>u8</code> 能够存储的数字为 0 ~ 2<sup>8</sup> - 1，即 0 ~ 255。</p>
 <p>此外，<code>isize</code> 和 <code>usize</code> 类型取决于程序运行的计算机 CPU 类型： 若 CPU 是 32 位的，则这两个类型是 32 位的，同理，若 CPU 是 64 位，那么它们则是 64 位。</p>
-<p>整形字面量可以用下表的形式书写：</p>
+<p>整型字面量可以用下表的形式书写：</p>
 <div class="table-wrapper"><table><thead><tr><th>数字字面量</th><th>示例</th></tr></thead><tbody>
 <tr><td>十进制</td><td><code>98_222</code></td></tr>
 <tr><td>十六进制</td><td><code>0xff</code></td></tr>
@@ -402,6 +402,14 @@ note: run with `RUST_BACKTRACE=1` environment variable to display
     // 注意这些计算符除了!之外都可以加上=进行赋值 (因为!=要用来判断不等于)
     a &lt;&lt;= b;
     println!("(a &lt;&lt; b) value is {:08b}", a);
+}</code></pre></pre>
+<p>对于移位运算，Rust 会检查它是否超出该整型的位数范围，如果超出，则会报错 overflow。比如，一个 8 位的整型，如果试图移位 8 位，就会报错，但如果移位 7 位就不会。Rust 这样做的理由也很简单，如果移位太多，那么这个移位后的数字就是全 0 或者全 1，所以移位操作不如直接写 0 或者 -1，这很可能意味着这里的代码是有问题的。需要注意的是，不论 debug 模式还是 release 模式，Rust 都会检查溢出。</p>
+<pre><pre class="playground"><code class="language-rust edition2021">fn main() {
+   let a: u8 = 255;
+   let b = a&gt;&gt;7; // ok
+   let b = a&lt;&lt;7; // ok
+   let b = a&gt;&gt;8; // overflow
+   let b = a&lt;&lt;8; // overflow
 }</code></pre></pre>
 <h2 id="序列range"><a class="header" href="#序列range">序列(Range)</a></h2>
 <p>Rust 提供了一个非常简洁的方式，用来生成连续的数值，例如 <code>1..5</code>，生成从 1 到 4 的连续数字，不包含 5 ；<code>1..=5</code>，生成从 1 到 5 的连续数字，包含 5，它的用途很简单，常常用于循环中：</p>

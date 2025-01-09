@@ -1267,7 +1267,7 @@ error[E0282]: type annotations needed
 <p>每个有符号类型规定的数字范围是 -(2<sup>n - 1</sup>) ~ 2<sup>n -
 1</sup> - 1，其中 <code>n</code> 是该定义形式的位长度。因此 <code>i8</code> 可存储数字范围是 -(2<sup>7</sup>) ~ 2<sup>7</sup> - 1，即 -128 ~ 127。无符号类型可以存储的数字范围是 0 ~ 2<sup>n</sup> - 1，所以 <code>u8</code> 能够存储的数字为 0 ~ 2<sup>8</sup> - 1，即 0 ~ 255。</p>
 <p>此外，<code>isize</code> 和 <code>usize</code> 类型取决于程序运行的计算机 CPU 类型： 若 CPU 是 32 位的，则这两个类型是 32 位的，同理，若 CPU 是 64 位，那么它们则是 64 位。</p>
-<p>整形字面量可以用下表的形式书写：</p>
+<p>整型字面量可以用下表的形式书写：</p>
 <div class="table-wrapper"><table><thead><tr><th>数字字面量</th><th>示例</th></tr></thead><tbody>
 <tr><td>十进制</td><td><code>98_222</code></td></tr>
 <tr><td>十六进制</td><td><code>0xff</code></td></tr>
@@ -1465,6 +1465,14 @@ note: run with `RUST_BACKTRACE=1` environment variable to display
     // 注意这些计算符除了!之外都可以加上=进行赋值 (因为!=要用来判断不等于)
     a &lt;&lt;= b;
     println!("(a &lt;&lt; b) value is {:08b}", a);
+}</code></pre></pre>
+<p>对于移位运算，Rust 会检查它是否超出该整型的位数范围，如果超出，则会报错 overflow。比如，一个 8 位的整型，如果试图移位 8 位，就会报错，但如果移位 7 位就不会。Rust 这样做的理由也很简单，如果移位太多，那么这个移位后的数字就是全 0 或者全 1，所以移位操作不如直接写 0 或者 -1，这很可能意味着这里的代码是有问题的。需要注意的是，不论 debug 模式还是 release 模式，Rust 都会检查溢出。</p>
+<pre><pre class="playground"><code class="language-rust edition2021">fn main() {
+   let a: u8 = 255;
+   let b = a&gt;&gt;7; // ok
+   let b = a&lt;&lt;7; // ok
+   let b = a&gt;&gt;8; // overflow
+   let b = a&lt;&lt;8; // overflow
 }</code></pre></pre>
 <h2 id="序列range"><a class="header" href="#序列range">序列(Range)</a></h2>
 <p>Rust 提供了一个非常简洁的方式，用来生成连续的数值，例如 <code>1..5</code>，生成从 1 到 4 的连续数字，不包含 5 ；<code>1..=5</code>，生成从 1 到 5 的连续数字，包含 5，它的用途很简单，常常用于循环中：</p>
@@ -5101,7 +5109,7 @@ fn main() {
 <h3 id="--运算符到哪去了"><a class="header" href="#--运算符到哪去了"><code>-&gt;</code> 运算符到哪去了？</a></h3>
 <p>在 C/C++ 语言中，有两个不同的运算符来调用方法：<code>.</code> 直接在对象上调用方法，而 <code>-&gt;</code> 在一个对象的指针上调用方法，这时需要先解引用指针。换句话说，如果 <code>object</code> 是一个指针，那么 <code>object-&gt;something()</code> 和 <code>(*object).something()</code> 是一样的。</p>
 <p>Rust 并没有一个与 <code>-&gt;</code> 等效的运算符；相反，Rust 有一个叫 <strong>自动引用和解引用</strong>的功能。方法调用是 Rust 中少数几个拥有这种行为的地方。</p>
-<p>他是这样工作的：当使用 <code>object.something()</code> 调用方法时，Rust 会自动为 <code>object</code> 添加 <code>&amp;</code>、<code>&amp;mut</code> 或 <code>*</code> 以便使 <code>object</code> 与方法签名匹配。也就是说，这些代码是等价的：</p>
+<p>他是这样工作的：当使用 <code>object.something()</code> 调用方法时，Rust 会自动为 <code>object</code> 添加 <code>&amp;</code>（视可见性添加<code>&amp;mut</code>)、 <code>*</code> 以便使 <code>object</code> 与方法签名匹配。也就是说，这些代码是等价的：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">#[derive(Debug,Copy,Clone)]
@@ -6515,11 +6523,21 @@ fn difference&lt;A,B,C&gt;(container: &amp;C) -&gt; i32
 
 fn difference&lt;C: Container&gt;(container: &amp;C) {}
 <span class="boring">}</span></code></pre></pre>
-<h2 id="默认泛型类型参数"><a class="header" href="#默认泛型类型参数">默认泛型类型参数</a></h2>
-<p>当使用泛型类型参数时，可以为其指定一个默认的具体类型，例如标准库中的 <code>std::ops::Add</code> 特征：</p>
+<p>关联类型还可以被其它特征进行约束，例如：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>trait Add&lt;RHS=Self&gt; {
+</span>trait Container{
+    type A：Display;
+    type B;
+    fn contains(&amp;self, a: &amp;Self::A, b: &amp;Self::B) -&gt; bool;
+}
+
+# 默认泛型类型参数
+
+当使用泛型类型参数时，可以为其指定一个默认的具体类型，例如标准库中的 `std::ops::Add` 特征：
+
+```rust
+trait Add&lt;RHS=Self&gt; {
     type Output;
 
     fn add(self, rhs: RHS) -&gt; Self::Output;
