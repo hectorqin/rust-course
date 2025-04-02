@@ -257,13 +257,12 @@ fn difference&lt;C: Container&gt;(container: &amp;C) {}
     type B;
     fn contains(&amp;self, a: &amp;Self::A, b: &amp;Self::B) -&gt; bool;
 }
-
-# 默认泛型类型参数
-
-当使用泛型类型参数时，可以为其指定一个默认的具体类型，例如标准库中的 `std::ops::Add` 特征：
-
-```rust
-trait Add&lt;RHS=Self&gt; {
+<span class="boring">}</span></code></pre></pre>
+<h2 id="默认泛型类型参数"><a class="header" href="#默认泛型类型参数">默认泛型类型参数</a></h2>
+<p>当使用泛型类型参数时，可以为其指定一个默认的具体类型，例如标准库中的 <code>std::ops::Add</code> 特征：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>trait Add&lt;RHS=Self&gt; {
     type Output;
 
     fn add(self, rhs: RHS) -&gt; Self::Output;
