@@ -2478,7 +2478,7 @@ assert_eq!(slice, &amp;[2, 3]);
 <p>顾名思义，字符串是由字符组成的连续集合，但是在上一节中我们提到过，<strong>Rust 中的字符是 Unicode 类型，因此每个字符占据 4 个字节内存空间，但是在字符串中不一样，字符串是 UTF-8 编码，也就是字符串中的字符所占的字节数是变化的(1 - 4)</strong>，这样有助于大幅降低字符串所占用的内存空间。</p>
 <p>Rust 在语言级别，只有一种字符串类型： <code>str</code>，它通常是以引用类型出现 <code>&amp;str</code>，也就是上文提到的字符串切片。虽然语言级别只有上述的 <code>str</code> 类型，但是在标准库里，还有多种不同用途的字符串类型，其中使用最广的即是 <code>String</code> 类型。</p>
 <p><code>str</code> 类型是硬编码进可执行文件，也无法被修改，但是 <code>String</code> 则是一个可增长、可改变且具有所有权的 UTF-8 编码字符串，<strong>当 Rust 用户提到字符串时，往往指的就是 <code>String</code> 类型和 <code>&amp;str</code> 字符串切片类型，这两个类型都是 UTF-8 编码</strong>。</p>
-<p>除了 <code>String</code> 类型的字符串，Rust 的标准库还提供了其他类型的字符串，例如 <code>OsString</code>， <code>OsStr</code>， <code>CsString</code> 和 <code>CsStr</code> 等，注意到这些名字都以 <code>String</code> 或者 <code>Str</code> 结尾了吗？它们分别对应的是具有所有权和被借用的变量。</p>
+<p>除了 <code>String</code> 类型的字符串，Rust 的标准库还提供了其他类型的字符串，例如 <code>OsString</code>， <code>OsStr</code>， <code>CString</code> 和 <code>CStr</code> 等，注意到这些名字都以 <code>String</code> 或者 <code>Str</code> 结尾了吗？它们分别对应的是具有所有权和被借用的变量。</p>
 <h2 id="string-与-str-的转换"><a class="header" href="#string-与-str-的转换">String 与 &amp;str 的转换</a></h2>
 <p>在之前的代码中，已经见到好几种从 <code>&amp;str</code> 类型生成 <code>String</code> 类型的操作：</p>
 <ul>
@@ -7409,7 +7409,7 @@ assert_eq!(hash.get(&amp;42), Some(&amp;"the answer"));
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="认识生命周期"><a class="header" href="#认识生命周期">认识生命周期</a></h1>
 <p>各位读者，之前的集合章节挺简单吧？是不是安逸了挺久了？要不咱们加点料？来试试 Rust 中令人闻风丧胆的生命周期？</p>
-<p>生命周期，简而言之就是引用的有效作用域。在大多数时候，我们无需手动的声明生命周期，因为编译器可以自动进行推导，用类型来类比下：</p>
+<p>生命周期，简而言之就是引用的有效作用域。在大多数时候，我们无需手动声明生命周期，因为编译器可以自动进行推导，用类型来类比下：</p>
 <ul>
 <li>就像编译器大部分时候可以自动推导类型 &lt;-&gt; 一样，编译器大多数时候也可以自动推导生命周期</li>
 <li>在多种类型存在时，编译器往往要求我们手动标明类型 &lt;-&gt; 当多个生命周期存在，且编译器无法推导出某个引用的生命周期时，就需要我们手动标明生命周期</li>
@@ -12409,7 +12409,7 @@ for val in v1_iter {
 <h2 id="消费者与适配器"><a class="header" href="#消费者与适配器">消费者与适配器</a></h2>
 <p>消费者是迭代器上的方法，它会消费掉迭代器中的元素，然后返回其类型的值，这些消费者都有一个共同的特点：在它们的定义中，都依赖 <code>next</code> 方法来消费元素，因此这也是为什么迭代器要实现 <code>Iterator</code> 特征，而该特征必须要实现 <code>next</code> 方法的原因。</p>
 <h4 id="消费者适配器"><a class="header" href="#消费者适配器">消费者适配器</a></h4>
-<p>只要迭代器上的某个方法 <code>A</code> 在其内部调用了 <code>next</code> 方法，那么 <code>A</code> 就被称为<strong>消费性适配器</strong>：因为 <code>next</code> 方法会消耗掉迭代器上的元素，所以方法 <code>A</code> 的调用也会消耗掉迭代器上的元素。</p>
+<p>只要迭代器上的某个方法 <code>A</code> 在其内部调用了 <code>next</code> 方法，那么 <code>A</code> 就被称为<strong>消费者适配器</strong>：因为 <code>next</code> 方法会消耗掉迭代器上的元素，所以方法 <code>A</code> 的调用也会消耗掉迭代器上的元素。</p>
 <p>其中一个例子是 <code>sum</code> 方法，它会拿走迭代器的所有权，然后通过不断调用 <code>next</code> 方法对里面的元素进行求和：</p>
 <pre><pre class="playground"><code class="language-rust edition2021">fn main() {
     let v1 = vec![1, 2, 3];
