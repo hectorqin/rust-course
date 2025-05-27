@@ -42,6 +42,17 @@
         <script src="../../toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
@@ -119,7 +130,7 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -483,8 +494,8 @@ assert_eq!(18, sum);
 <p>其中 <code>zip</code>，<code>map</code>，<code>filter</code> 是迭代器适配器：</p>
 <ul>
 <li><code>zip</code> 把两个迭代器合并成一个迭代器，新迭代器中，每个元素都是一个元组，由之前两个迭代器的元素组成。例如将<strong>形如</strong> <code>[1, 2, 3, 4, 5]</code> 和 <code>[2, 3, 4, 5]</code> 的迭代器合并后，新的迭代器形如 <code>[(1, 2),(2, 3),(3, 4),(4, 5)]</code></li>
-<li><code>map</code> 是将迭代器中的值经过映射后，转换成新的值[2, 6, 12, 20]</li>
-<li><code>filter</code> 对迭代器中的元素进行过滤，若闭包返回 <code>true</code> 则保留元素[6, 12]，反之剔除</li>
+<li><code>map</code> 是将迭代器中的值经过映射后，转换成新的值<code>[2, 6, 12, 20]</code></li>
+<li><code>filter</code> 对迭代器中的元素进行过滤，若闭包返回 <code>true</code> 则保留元素，反之剔除。过滤后的迭代器形如<code>[6, 12]</code></li>
 </ul>
 <p>而 <code>sum</code> 是消费者适配器，对迭代器中的所有元素求和，最终返回一个 <code>u32</code> 值 <code>18</code>。</p>
 <h5 id="enumerate"><a class="header" href="#enumerate">enumerate</a></h5>
@@ -620,8 +631,8 @@ And further: What you do use, you couldn’t hand code any better.</p>
         </script>
 
         <script src="../../ace.js"></script>
-        <script src="../../editor.js"></script>
         <script src="../../mode-rust.js"></script>
+        <script src="../../editor.js"></script>
         <script src="../../theme-dawn.js"></script>
         <script src="../../theme-tomorrow_night.js"></script>
 

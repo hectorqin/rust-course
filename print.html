@@ -43,6 +43,17 @@
         <script src="toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
@@ -120,7 +131,7 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -518,6 +529,18 @@
 <p><strong>Linux 下：</strong></p>
 <p>Linux 用户一般应按照相应发行版的文档来安装 <code>GCC</code> 或 <code>Clang</code>。</p>
 <p>例如，如果你使用 Ubuntu，则可安装 <code>build-essential</code>。</p>
+<h2 id="在-freebsd-上安装-rustup"><a class="header" href="#在-freebsd-上安装-rustup">在 FreeBSD 上安装 <code>rustup</code></a></h2>
+<ul>
+<li>使用 pkg 安装：</li>
+</ul>
+<pre><code class="language-sh"># pkg install rustup-init
+</code></pre>
+<ul>
+<li>使用 Ports 安装：</li>
+</ul>
+<pre><code class="language-sh"># cd /usr/ports/devel/rustup-init/ 
+# make install clean
+</code></pre>
 <h2 id="在-windows-上安装-rustup"><a class="header" href="#在-windows-上安装-rustup">在 Windows 上安装 <code>rustup</code></a></h2>
 <p>Windows 上安装 Rust 需要有 <code>C++</code> 环境，以下为安装的两种方式：</p>
 <p><strong>1. <code>x86_64-pc-windows-msvc</code>（官方推荐）</strong></p>
@@ -12556,8 +12579,8 @@ assert_eq!(18, sum);
 <p>其中 <code>zip</code>，<code>map</code>，<code>filter</code> 是迭代器适配器：</p>
 <ul>
 <li><code>zip</code> 把两个迭代器合并成一个迭代器，新迭代器中，每个元素都是一个元组，由之前两个迭代器的元素组成。例如将<strong>形如</strong> <code>[1, 2, 3, 4, 5]</code> 和 <code>[2, 3, 4, 5]</code> 的迭代器合并后，新的迭代器形如 <code>[(1, 2),(2, 3),(3, 4),(4, 5)]</code></li>
-<li><code>map</code> 是将迭代器中的值经过映射后，转换成新的值[2, 6, 12, 20]</li>
-<li><code>filter</code> 对迭代器中的元素进行过滤，若闭包返回 <code>true</code> 则保留元素[6, 12]，反之剔除</li>
+<li><code>map</code> 是将迭代器中的值经过映射后，转换成新的值<code>[2, 6, 12, 20]</code></li>
+<li><code>filter</code> 对迭代器中的元素进行过滤，若闭包返回 <code>true</code> 则保留元素，反之剔除。过滤后的迭代器形如<code>[6, 12]</code></li>
 </ul>
 <p>而 <code>sum</code> 是消费者适配器，对迭代器中的所有元素求和，最终返回一个 <code>u32</code> 值 <code>18</code>。</p>
 <h5 id="enumerate"><a class="header" href="#enumerate">enumerate</a></h5>
@@ -23868,18 +23891,15 @@ impl Future for Delay {
 <blockquote>
 <p>关于 <code>Send</code> 和 <code>Sync</code> 的具体讲解见<a href="https://course.rs/advance/concurrency-with-threads/send-sync.html">这里</a></p>
 </blockquote>
-<p>基于以上理由，我们选择使用来自于 <code>crossbeam</code> 的消息通道，因为标准库中的消息通道不是 <code>Sync</code> 的。在 <code>Cargo.toml</code> 中添加以下依赖：</p>
-<pre><code class="language-toml">crossbeam = "0.8"
-</code></pre>
-<p>再来更新下 <code>MiniTokio</code> 结构体：</p>
+<p>基于以上理由，选择 <code>std::sync::mpsc</code>  重新实现 <code>MiniTokio</code> 结构体：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use crossbeam::channel;
+</span>use std::sync::mpsc;
 use std::sync::Arc;
 
 struct MiniTokio {
-    scheduled: channel::Receiver&lt;Arc&lt;Task&gt;&gt;,
-    sender: channel::Sender&lt;Arc&lt;Task&gt;&gt;,
+    scheduled: mpsc::Receiver&lt;Arc&lt;Task&gt;&gt;,
+    sender: mpsc::Sender&lt;Arc&lt;Task&gt;&gt;,
 }
 
 struct Task {
@@ -23896,7 +23916,7 @@ struct Task {
     // `Mutex` 是为了让 `Task` 实现 `Sync` 特征，它能保证同一时间只有一个线程可以访问 `Future`。
     // 事实上 `Mutex` 并没有在 Tokio 中被使用，这里我们只是为了简化： Tokio 的真实代码实在太长了 :D
     future: Mutex&lt;Pin&lt;Box&lt;dyn Future&lt;Output = ()&gt; + Send&gt;&gt;&gt;,
-    executor: channel::Sender&lt;Arc&lt;Task&gt;&gt;,
+    executor: mpsc::Sender&lt;Arc&lt;Task&gt;&gt;,
 }
 
 impl Task {
@@ -23933,7 +23953,7 @@ impl ArcWake for Task {
 
     /// 初始化一个新的 mini-tokio 实例
     fn new() -&gt; MiniTokio {
-        let (sender, scheduled) = channel::unbounded();
+        let (sender, scheduled) = mpsc::channel();
 
         MiniTokio { scheduled, sender }
     }
@@ -23964,7 +23984,7 @@ impl Task {
     // 使用给定的 future 来生成新的任务
     //
     // 新的任务会被推到 `sender` 中，接着该消息通道的接收端就可以获取该任务，然后执行
-    fn spawn&lt;F&gt;(future: F, sender: &amp;channel::Sender&lt;Arc&lt;Task&gt;&gt;)
+    fn spawn&lt;F&gt;(future: F, sender: &amp;mpsc::Sender&lt;Arc&lt;Task&gt;&gt;)
     where
         F: Future&lt;Output = ()&gt; + Send + 'static,
     {
@@ -46487,8 +46507,8 @@ let _x = &amp;*std::ptr::null::&lt;u8&gt;();
         </script>
 
         <script src="ace.js"></script>
-        <script src="editor.js"></script>
         <script src="mode-rust.js"></script>
+        <script src="editor.js"></script>
         <script src="theme-dawn.js"></script>
         <script src="theme-tomorrow_night.js"></script>
 
