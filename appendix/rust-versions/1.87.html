@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>1.86 - Rust语言圣经(Rust Course)</title>
+        <title>1.87 - Rust语言圣经(Rust Course)</title>
 
 
         <!-- Custom HTML head -->
@@ -144,7 +144,7 @@
                         <a href="https://github.com/sunface/rust-course" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.86.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.87.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -173,115 +173,129 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="rust-新版解读--186--trait-upcasting"><a class="header" href="#rust-新版解读--186--trait-upcasting">Rust 新版解读 | 1.86 | Trait upcasting</a></h1>
+                        <h1 id="rust-新版解读--187--十周年"><a class="header" href="#rust-新版解读--187--十周年">Rust 新版解读 | 1.87 | 十周年🎉</a></h1>
+<p><a href="https://blog.rust-lang.org/2015/05/15/Rust-1.0/">Rust 1.0</a> 十周年🎉</p>
 <blockquote>
-<p>Rust 1.86 官方 release doc: <a href="https://blog.rust-lang.org/2025/04/03/Rust-1.86.0/">Announcing Rust 1.86.0 | Rust Blog</a></p>
+<p>Rust 1.87 官方 release doc: <a href="https://blog.rust-lang.org/2025/05/15/Rust-1.87.0/">Announcing Rust 1.87.0 | Rust Blog</a></p>
 </blockquote>
-<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.86 版本:</p>
+<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.87 版本:</p>
 <pre><code class="language-shell">$ rustup update stable
 </code></pre>
-<h2 id="特征向上转型trait-upcasting"><a class="header" href="#特征向上转型trait-upcasting">特征向上转型(Trait upcasting)</a></h2>
-<p>本次更新包含了一个期待已久的功能————特征对象的向上转型能力。如果一个特征拥有 <a href="https://doc.rust-lang.org/reference/items/traits.html#supertraits">supertrait</a>，你可以将指向该特征对象的引用强制转换为指向 supertrait 对象的引用：</p>
+<h2 id="匿名管道"><a class="header" href="#匿名管道">匿名管道</a></h2>
+<p>1.87 版本为标准库添加了匿名管道支持，包括与 <code>std::process::Command</code> 输入/输出方法的集成。例如，现在可以相对简单地合并标准输出和标准错误流，如下所示，而过去需要额外线程或平台特定函数才能实现。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>trait Trait: Supertrait {}
-trait Supertrait {}
+</span>use std::process::Command;
+use std::io::Read;
 
-fn upcast(x: &amp;dyn Trait) -&gt; &amp;dyn Supertrait {
-    x
-}
+let (mut recv, send) = std::io::pipe()?;
+
+let mut command = Command::new("path/to/bin")
+    // 标准输出和标准错误都会写入同一个管道，实现合并
+    .stdout(send.try_clone()?)
+    .stderr(send)
+    .spawn()?;
+
+let mut output = Vec::new();
+recv.read_to_end(&amp;mut output)?;
+
+// 必须在进程退出前读取管道内容，避免程序输出过多时填满系统缓冲区
+assert!(command.wait()?.success());
 <span class="boring">}</span></code></pre></pre>
-<p>该功能同样适用于其他类型的（智能）指针，例如 <code>Arc&lt;dyn Trait&gt; -&gt; Arc&lt;dyn Supertrait&gt;</code> 或 <code>*const dyn Trait -&gt; *const dyn Supertrait</code>。</p>
-<p>此前需要通过特征内部定义 <code>upcast</code> 方法（如 <code>fn as_supertrait(&amp;self) -&gt; &amp;dyn Supertrait</code> ）来实现，且仅适用于单一引用/指针类型。现在不再需要此类变通方案。</p>
-<p>需注意：这意味着特征对象的裸指针具有一个特别的约束：“泄漏”一个指向无效虚表的裸指针到安全代码可能导致未定义行为。当前尚不清楚在严格受控环境下临时创建此类裸指针是否会立即引发未定义行为，因此应避免在任何条件下创建此类指针（Miri 会强制执行此约束）。</p>
-<p>特征向上转型在与 <code>Any</code> 特征结合时尤为实用，无需添加特征方法或使用外部crate即可将特征对象向上转型为 <code>dyn Any</code> 来调用 <code>Any</code> 的向下转型方法：</p>
+<h2 id="安全的架构内置函数"><a class="header" href="#安全的架构内置函数">安全的架构内置函数</a></h2>
+<p>大多数仅因需要启用目标特性而被标记为不安全的 <code>std::arch</code> 内置函数，现在可以在已启用相应特性的安全代码中调用。例如，以下使用手动内置函数实现数组求和的示例程序，现在核心循环可以使用安全代码。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::any::Any;
+</span>#![forbid(unsafe_op_in_unsafe_fn)]
 
-trait MyAny: Any {}
+<span class="boring">fn main() {
+</span>use std::arch::x86_64::*;
 
-impl dyn MyAny {
-    fn downcast_ref&lt;T&gt;(&amp;self) -&gt; Option&lt;&amp;T&gt; {
-        (self as &amp;dyn Any).downcast_ref()
+fn sum(slice: &amp;[u32]) -&gt; u32 {
+    #[cfg(target_arch = "x86_64")]
+    {
+        if is_x86_feature_detected!("avx2") {
+            // 安全性：我们已检测到运行时启用了该特性，因此调用此函数是安全的
+            return unsafe { sum_avx2(slice) };
+        }
     }
-}
-<span class="boring">}</span></code></pre></pre>
-<p>更多细节请参阅<a href="https://doc.rust-lang.org/reference/type-coercions.html#unsized-coercions">Rust参考文档中关于特征向上转型的内容</a>。</p>
-<h2 id="hashmap和切片现支持可变索引多个元素"><a class="header" href="#hashmap和切片现支持可变索引多个元素">HashMap和切片现支持可变索引多个元素</a></h2>
-<p>借用检查器原先会阻止通过重复调用 <code>get_mut</code> 方法获取的借用同时使用。为安全地支持获取多个可变引用，标准库现在为切片和 <code>HashMap</code> 提供 <code>get_disjoint_mut</code> 辅助方法，可同时获取多个元素的可变引用。示例取自 <a href="https://doc.rust-lang.org/stable/std/primitive.slice.html#method.get_disjoint_mut"><code>slice::get_disjoint_mut</code> API 文档</a>：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let v = &amp;mut [1, 2, 3];
-if let Ok([a, b]) = v.get_disjoint_mut([0, 2]) {
-    *a = 413;
-    *b = 612;
-}
-assert_eq!(v, &amp;[413, 2, 612]);
 
-if let Ok([a, b]) = v.get_disjoint_mut([0..1, 1..3]) {
-    a[0] = 8;
-    b[0] = 88;
-    b[1] = 888;
-}
-assert_eq!(v, &amp;[8, 88, 888]);
-
-if let Ok([a, b]) = v.get_disjoint_mut([1..=2, 0..=0]) {
-    a[0] = 11;
-    a[1] = 111;
-    b[0] = 1;
-}
-assert_eq!(v, &amp;[1, 11, 111]);
-<span class="boring">}</span></code></pre></pre>
-<h2 id="允许安全函数标记-target_feature-属性"><a class="header" href="#允许安全函数标记-target_feature-属性">允许安全函数标记 <code>#[target_feature]</code> 属性</a></h2>
-<p>此前仅 <code>unsafe</code> 函数可标记 <code>#[target_feature]</code> 属性，因未启用目标特性时调用此类函数会导致未定义行为。本次更新稳定了 <code>target_feature_11</code> 特性，允许<em>安全</em>函数标记该属性。</p>
-<p>标记目标特性的安全函数仅可被同标记函数安全调用，但不可传递给以 <code>Fn*</code> 特征约束的泛型函数，且仅支持在标记函数内部强制转换为函数指针。</p>
-<p>在未标记函数内部可通过 <code>unsafe</code> 块调用，但调用者需确保目标特性可用：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[target_feature(enable = "avx2")]
-fn requires_avx2() {
-    // ... 省略
+    slice.iter().sum()
 }
 
 #[target_feature(enable = "avx2")]
-fn safe_callsite() {
-    requires_avx2(); // 安全调用
-}
-
-fn unsafe_callsite() {
-    if is_x86_feature_detected!("avx2") {
-        unsafe { requires_avx2() }; // 需手动验证
+#[cfg(target_arch = "x86_64")]
+fn sum_avx2(slice: &amp;[u32]) -&gt; u32 {
+    // 安全性：__m256i 和 u32 具有相同的有效性
+    let (prefix, middle, tail) = unsafe { slice.align_to::&lt;__m256i&gt;() };
+    
+    let mut sum = prefix.iter().sum::&lt;u32&gt;();
+    sum += tail.iter().sum::&lt;u32&gt;();
+    
+    // 在 1.87 中核心循环现在是完全安全的代码，因为内置函数要求与函数定义匹配的目标特性 (avx2)
+    let mut base = _mm256_setzero_si256();
+    for e in middle.iter() {
+        base = _mm256_add_epi32(base, *e);
     }
+    
+    // 安全性：__m256i 和 u32 具有相同的有效性
+    let base: [u32; 8] = unsafe { std::mem::transmute(base) };
+    sum += base.iter().sum::&lt;u32&gt;();
+    
+    sum
 }
 <span class="boring">}</span></code></pre></pre>
-<p>详情参阅 <a href="https://github.com/rust-lang/rfcs/blob/master/text/2396-target-feature-1.1.md"><code>target_features_11</code> RFC</a>。</p>
-<h2 id="为保障内存安全添加指针非空调试断言"><a class="header" href="#为保障内存安全添加指针非空调试断言">为保障内存安全添加指针非空调试断言</a></h2>
-<p>编译器现会在以下场景插入调试断言：对非零大小类型的读写操作前，以及将指针重新借用为引用时。例如以下代码在启用调试断言时将触发 panic：</p>
+<h2 id="asm-跳转到-rust-代码"><a class="header" href="#asm-跳转到-rust-代码"><code>asm!</code> 跳转到 Rust 代码</a></h2>
+<p>内联汇编 (<code>asm!</code>) 现在可以跳转到 Rust 代码中的 labeled 代码块。这为底层编程提供了更大灵活性，例如在操作系统内核中实现优化控制流，或更高效地与硬件交互。</p>
+<ul>
+<li><code>asm!</code> 宏现在支持 label 标签语法，作为跳转目标</li>
+<li>label 必须是返回类型为 <code>()</code> 或 <code>!</code> 的块表达式</li>
+<li>跳转时会执行该块，然后继续执行 <code>asm!</code> 块之后的代码</li>
+<li>在同一 <code>asm!</code> 里使用调用中使用 output 和 label 仍处于<a href="https://github.com/rust-lang/rust/issues/119364">unstable</a>的</li>
+</ul>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let _x = *std::ptr::null::&lt;u8&gt;();
-let _x = &amp;*std::ptr::null::&lt;u8&gt;();
+</span>unsafe {
+    asm!(
+        "jmp {}",
+        label {
+            println!("从汇编跳转而来！");
+        }
+    );
+}
 <span class="boring">}</span></code></pre></pre>
-<p>自Rust 1.53.0起简单案例已产生警告，新运行时检查可检测任意复杂场景。这些断言仅在调试模式下生效，因此<strong>不应该</strong>依赖其保障内存安全。且调试模式禁用的依赖项（如标准库）即使被调试模式代码调用也不会触发断言。</p>
-<h2 id="默认启用-missing_abi-lint-警告"><a class="header" href="#默认启用-missing_abi-lint-警告">默认启用 <code>missing_abi</code> lint 警告</a></h2>
-<p>在 extern 块和函数中省略 ABI（如 <code>extern {}</code> 和 <code>extern fn</code>）现在会触发 <code>missing_abi</code> lint 警告。<code>extern</code> 关键字后省略 ABI 始终隐式采用 <code>"C"</code> ABI，现建议显式指定（如 <code>extern "C" {}</code> 和 <code>extern "C" fn</code>）。</p>
-<p>参阅<a href="https://rust-lang.github.io/rfcs/3722-explicit-extern-abis.html">显式外部 ABI RFC</a>获取详情。</p>
-<h2 id="1870版本目标弃用警告"><a class="header" href="#1870版本目标弃用警告">1.87.0版本目标弃用警告</a></h2>
-<p>Tier-2 目标 <code>i586-pc-windows-msvc</code> 将在Rust 1.87.0移除。该目标与更流行的<code>i686-pc-windows-msvc</code>的区别在于不要求SSE2指令支持，所有<code>windows</code>目标（除<code>win7</code>目标外）的最低要求系统版本，即 Windows 10 本身就需要SSE2指令。</p>
-<p>当前使用该目标的用户应在1.87.0发布前迁移至<code>i686-pc-windows-msvc</code>。详情参见<a href="https://github.com/rust-lang/compiler-team/issues/840">重大变更提案</a>。</p>
+<p>更多细节请参阅<a href="https://doc.rust-lang.org/nightly/reference/inline-assembly.html#r-asm.operand-type.supported-operands.label">参考文档</a>。</p>
+<h2 id="特征定义中-impl-trait-的精确捕获--use"><a class="header" href="#特征定义中-impl-trait-的精确捕获--use">特征定义中 <code>impl Trait</code> 的精确捕获 (<code>+ use&lt;...&gt;</code>)</a></h2>
+<p>本版本稳定了在特征定义中使用 <code>impl Trait</code> 返回类型时指定具体捕获的泛型类型和生命周期的功能。这扩展了 <a href="https://blog.rust-lang.org/2024/10/17/Rust-1.82.0/#precise-capturing-use-syntax">1.82</a> 版本中对非特征函数的稳定支持。</p>
+<p>一些示例解语法：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>trait Foo {
+    fn method&lt;'a&gt;(&amp;'a self) -&gt; impl Sized;
+    
+    // ... 解语法后类似：
+    type Implicit1&lt;'a&gt;: Sized;
+    fn method_desugared&lt;'a&gt;(&amp;'a self) -&gt; Self::Implicit1&lt;'a&gt;;
+    
+    // ... 而使用精确捕获时 ...
+    fn precise&lt;'a&gt;(&amp;'a self) -&gt; impl Sized + use&lt;Self&gt;;
+    
+    // ... 解语法后类似：
+    type Implicit2: Sized;
+    fn precise_desugared&lt;'a&gt;(&amp;'a self) -&gt; Self::Implicit2;
+}
+<span class="boring">}</span></code></pre></pre>
 <h2 id="others"><a class="header" href="#others">Others</a></h2>
-<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/04/03/Rust-1.86.0.html#stabilized-apis">原Blog</a></p>
+<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/05/15/Rust-1.87.0/#stabilized-apis">原Blog</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../appendix/rust-versions/1.85.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../appendix/rust-versions/1.86.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../appendix/rust-versions/1.87.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../appendix/rust-versions/1.88.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -291,11 +305,11 @@ let _x = &amp;*std::ptr::null::&lt;u8&gt;();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../appendix/rust-versions/1.85.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../appendix/rust-versions/1.86.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../appendix/rust-versions/1.87.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../appendix/rust-versions/1.88.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

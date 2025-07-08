@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>1.86 - Rust语言圣经(Rust Course)</title>
+        <title>1.88 - Rust语言圣经(Rust Course)</title>
 
 
         <!-- Custom HTML head -->
@@ -144,7 +144,7 @@
                         <a href="https://github.com/sunface/rust-course" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.86.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.88.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -173,117 +173,62 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="rust-新版解读--186--trait-upcasting"><a class="header" href="#rust-新版解读--186--trait-upcasting">Rust 新版解读 | 1.86 | Trait upcasting</a></h1>
+                        <h1 id="rust-新版解读--188--let_chains"><a class="header" href="#rust-新版解读--188--let_chains">Rust 新版解读 | 1.88 | let_chains</a></h1>
 <blockquote>
-<p>Rust 1.86 官方 release doc: <a href="https://blog.rust-lang.org/2025/04/03/Rust-1.86.0/">Announcing Rust 1.86.0 | Rust Blog</a></p>
+<p>Rust 1.88 官方 release doc: <a href="https://blog.rust-lang.org/2025/06/26/Rust-1.88.0/">Announcing Rust 1.88.0 | Rust Blog</a></p>
 </blockquote>
-<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.86 版本:</p>
+<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.88 版本:</p>
 <pre><code class="language-shell">$ rustup update stable
 </code></pre>
-<h2 id="特征向上转型trait-upcasting"><a class="header" href="#特征向上转型trait-upcasting">特征向上转型(Trait upcasting)</a></h2>
-<p>本次更新包含了一个期待已久的功能————特征对象的向上转型能力。如果一个特征拥有 <a href="https://doc.rust-lang.org/reference/items/traits.html#supertraits">supertrait</a>，你可以将指向该特征对象的引用强制转换为指向 supertrait 对象的引用：</p>
+<h2 id="let-链式表达式"><a class="header" href="#let-链式表达式">let 链式表达式</a></h2>
+<p>该特性允许在 <code>if</code> 和 <code>while</code> 条件中使用 <code>&amp;&amp;</code> 连接的 <code>let</code> 语句，甚至可以与布尔表达式混合使用，从而减少 <code>if</code>/<code>if let</code> 和 <code>while</code>/<code>while let</code> 之间的差异。<code>let</code> 子表达式中的模式可以是不可反驳或可反驳的，绑定变量可以在链式后续部分和代码体中使用。</p>
+<p>例如，以下代码片段组合了多个条件，之前需要嵌套 <code>if let</code> 和 <code>if</code> 块才能实现：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>trait Trait: Supertrait {}
-trait Supertrait {}
-
-fn upcast(x: &amp;dyn Trait) -&gt; &amp;dyn Supertrait {
-    x
+</span>if let Channel::Stable(v) = release_info()
+    &amp;&amp; let Semver { major, minor, .. } = v
+    &amp;&amp; major == 1
+    &amp;&amp; minor == 88
+{
+    println!("`let_chains` 在此版本中已稳定");
 }
 <span class="boring">}</span></code></pre></pre>
-<p>该功能同样适用于其他类型的（智能）指针，例如 <code>Arc&lt;dyn Trait&gt; -&gt; Arc&lt;dyn Supertrait&gt;</code> 或 <code>*const dyn Trait -&gt; *const dyn Supertrait</code>。</p>
-<p>此前需要通过特征内部定义 <code>upcast</code> 方法（如 <code>fn as_supertrait(&amp;self) -&gt; &amp;dyn Supertrait</code> ）来实现，且仅适用于单一引用/指针类型。现在不再需要此类变通方案。</p>
-<p>需注意：这意味着特征对象的裸指针具有一个特别的约束：“泄漏”一个指向无效虚表的裸指针到安全代码可能导致未定义行为。当前尚不清楚在严格受控环境下临时创建此类裸指针是否会立即引发未定义行为，因此应避免在任何条件下创建此类指针（Miri 会强制执行此约束）。</p>
-<p>特征向上转型在与 <code>Any</code> 特征结合时尤为实用，无需添加特征方法或使用外部crate即可将特征对象向上转型为 <code>dyn Any</code> 来调用 <code>Any</code> 的向下转型方法：</p>
+<p>由于一些边界场景难以兼容，let 链式表达式仅在 Rust 2024 版本中可用，因为该特性依赖于 <a href="https://doc.rust-lang.org/edition-guide/rust-2024/temporary-if-let-scope.html"><code>if let</code> 临时作用域</a> 变更以实现更一致的析构顺序。</p>
+<h2 id="裸函数"><a class="header" href="#裸函数">裸函数</a></h2>
+<p>Rust 现在支持编写没有编译器生成的收尾代码和序言的裸函数，允许完全控制特定函数的生成汇编代码。这是在 <code>global_asm!</code> 块中定义函数的更符合人体工程学的替代方案。裸函数使用 <code>#[unsafe(naked)]</code> 属性标记，其函数体由单个 <code>naked_asm!</code> 调用组成。</p>
+<p>例如：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use std::any::Any;
-
-trait MyAny: Any {}
-
-impl dyn MyAny {
-    fn downcast_ref&lt;T&gt;(&amp;self) -&gt; Option&lt;&amp;T&gt; {
-        (self as &amp;dyn Any).downcast_ref()
-    }
+</span>#[unsafe(naked)]
+pub unsafe extern "sysv64" fn wrapping_add(a: u64, b: u64) -&gt; u64 {
+    // 等同于 `a.wrapping_add(b)`。
+    core::arch::naked_asm!(
+        "lea rax, [rdi + rsi]",
+        "ret"
+    );
 }
 <span class="boring">}</span></code></pre></pre>
-<p>更多细节请参阅<a href="https://doc.rust-lang.org/reference/type-coercions.html#unsized-coercions">Rust参考文档中关于特征向上转型的内容</a>。</p>
-<h2 id="hashmap和切片现支持可变索引多个元素"><a class="header" href="#hashmap和切片现支持可变索引多个元素">HashMap和切片现支持可变索引多个元素</a></h2>
-<p>借用检查器原先会阻止通过重复调用 <code>get_mut</code> 方法获取的借用同时使用。为安全地支持获取多个可变引用，标准库现在为切片和 <code>HashMap</code> 提供 <code>get_disjoint_mut</code> 辅助方法，可同时获取多个元素的可变引用。示例取自 <a href="https://doc.rust-lang.org/stable/std/primitive.slice.html#method.get_disjoint_mut"><code>slice::get_disjoint_mut</code> API 文档</a>：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let v = &amp;mut [1, 2, 3];
-if let Ok([a, b]) = v.get_disjoint_mut([0, 2]) {
-    *a = 413;
-    *b = 612;
-}
-assert_eq!(v, &amp;[413, 2, 612]);
-
-if let Ok([a, b]) = v.get_disjoint_mut([0..1, 1..3]) {
-    a[0] = 8;
-    b[0] = 88;
-    b[1] = 888;
-}
-assert_eq!(v, &amp;[8, 88, 888]);
-
-if let Ok([a, b]) = v.get_disjoint_mut([1..=2, 0..=0]) {
-    a[0] = 11;
-    a[1] = 111;
-    b[0] = 1;
-}
-assert_eq!(v, &amp;[1, 11, 111]);
-<span class="boring">}</span></code></pre></pre>
-<h2 id="允许安全函数标记-target_feature-属性"><a class="header" href="#允许安全函数标记-target_feature-属性">允许安全函数标记 <code>#[target_feature]</code> 属性</a></h2>
-<p>此前仅 <code>unsafe</code> 函数可标记 <code>#[target_feature]</code> 属性，因未启用目标特性时调用此类函数会导致未定义行为。本次更新稳定了 <code>target_feature_11</code> 特性，允许<em>安全</em>函数标记该属性。</p>
-<p>标记目标特性的安全函数仅可被同标记函数安全调用，但不可传递给以 <code>Fn*</code> 特征约束的泛型函数，且仅支持在标记函数内部强制转换为函数指针。</p>
-<p>在未标记函数内部可通过 <code>unsafe</code> 块调用，但调用者需确保目标特性可用：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[target_feature(enable = "avx2")]
-fn requires_avx2() {
-    // ... 省略
-}
-
-#[target_feature(enable = "avx2")]
-fn safe_callsite() {
-    requires_avx2(); // 安全调用
-}
-
-fn unsafe_callsite() {
-    if is_x86_feature_detected!("avx2") {
-        unsafe { requires_avx2() }; // 需手动验证
-    }
-}
-<span class="boring">}</span></code></pre></pre>
-<p>详情参阅 <a href="https://github.com/rust-lang/rfcs/blob/master/text/2396-target-feature-1.1.md"><code>target_features_11</code> RFC</a>。</p>
-<h2 id="为保障内存安全添加指针非空调试断言"><a class="header" href="#为保障内存安全添加指针非空调试断言">为保障内存安全添加指针非空调试断言</a></h2>
-<p>编译器现会在以下场景插入调试断言：对非零大小类型的读写操作前，以及将指针重新借用为引用时。例如以下代码在启用调试断言时将触发 panic：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let _x = *std::ptr::null::&lt;u8&gt;();
-let _x = &amp;*std::ptr::null::&lt;u8&gt;();
-<span class="boring">}</span></code></pre></pre>
-<p>自Rust 1.53.0起简单案例已产生警告，新运行时检查可检测任意复杂场景。这些断言仅在调试模式下生效，因此<strong>不应该</strong>依赖其保障内存安全。且调试模式禁用的依赖项（如标准库）即使被调试模式代码调用也不会触发断言。</p>
-<h2 id="默认启用-missing_abi-lint-警告"><a class="header" href="#默认启用-missing_abi-lint-警告">默认启用 <code>missing_abi</code> lint 警告</a></h2>
-<p>在 extern 块和函数中省略 ABI（如 <code>extern {}</code> 和 <code>extern fn</code>）现在会触发 <code>missing_abi</code> lint 警告。<code>extern</code> 关键字后省略 ABI 始终隐式采用 <code>"C"</code> ABI，现建议显式指定（如 <code>extern "C" {}</code> 和 <code>extern "C" fn</code>）。</p>
-<p>参阅<a href="https://rust-lang.github.io/rfcs/3722-explicit-extern-abis.html">显式外部 ABI RFC</a>获取详情。</p>
-<h2 id="1870版本目标弃用警告"><a class="header" href="#1870版本目标弃用警告">1.87.0版本目标弃用警告</a></h2>
-<p>Tier-2 目标 <code>i586-pc-windows-msvc</code> 将在Rust 1.87.0移除。该目标与更流行的<code>i686-pc-windows-msvc</code>的区别在于不要求SSE2指令支持，所有<code>windows</code>目标（除<code>win7</code>目标外）的最低要求系统版本，即 Windows 10 本身就需要SSE2指令。</p>
-<p>当前使用该目标的用户应在1.87.0发布前迁移至<code>i686-pc-windows-msvc</code>。详情参见<a href="https://github.com/rust-lang/compiler-team/issues/840">重大变更提案</a>。</p>
+<p>手写的汇编块定义了整个函数体：与非裸函数不同，编译器不会对参数或返回值添加任何特殊处理。裸函数用于 Rust 的 <a href="https://github.com/rust-lang/compiler-builtins">compiler-builtins</a>、操作系统和嵌入式应用程序等场景。</p>
+<h2 id="布尔配置"><a class="header" href="#布尔配置">布尔配置</a></h2>
+<p><code>cfg</code> 谓词现在支持布尔字面量 <code>true</code> 和 <code>false</code>，分别作为始终启用或禁用的配置。这适用于 Rust 的<a href="https://doc.rust-lang.org/reference/conditional-compilation.html">条件编译</a>中的 <code>cfg</code> 和 <code>cfg_attr</code> 属性以及内置的 <code>cfg!</code> 宏，也适用于 Cargo <code>[target]</code> 表中的<a href="https://doc.rust-lang.org/cargo/reference/config.html#target">配置</a>和<a href="https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#platform-specific-dependencies">清单</a>。</p>
+<p>此前，空谓词列表可以用于无条件配置，例如 <code>cfg(all())</code> 用于启用，<code>cfg(any())</code> 用于禁用，但这种含义相当隐式且容易搞反。<code>cfg(true)</code> 和 <code>cfg(false)</code> 提供了一种更直接的方式来表达你的意图。</p>
+<p>具体背景细节可以参考 <a href="https://rust-lang.github.io/rfcs/3695-cfg-boolean-literals.html">RFC-3695</a></p>
+<h2 id="cargo-自动缓存清理"><a class="header" href="#cargo-自动缓存清理">Cargo 自动缓存清理</a></h2>
+<p>从 1.88.0 开始，Cargo 将自动对其主目录中的缓存运行垃圾回收！</p>
+<p>构建时，Cargo 会下载并缓存所需的依赖项。历史上，这些下载的文件永远不会被清理，导致 Cargo 主目录中的磁盘使用量无限增长。在此版本中，Cargo 引入了垃圾回收机制来自动清理旧文件（例如 <code>.crate</code> 文件）。Cargo 将删除从网络下载且 3 个月内未访问的文件，以及从本地系统获取且 1 个月内未访问的文件。请注意，如果在离线状态下运行（使用 <code>--offline</code> 或 <code>--frozen</code>），则不会进行此自动垃圾回收。</p>
+<p>Cargo 1.78 以后会跟踪所需的访问信息以进行此垃圾回收。这是在实际清理开始之前引入的，以减少仍使用早期版本的用户的缓存更换。如果你经常使用比 1.78 版本更早的 Cargo 版本，并且希望某些仅由旧版本访问的 crate 不被重新下载，你可以在 Cargo 配置中设置 <code>cache.auto-clean-frequency = "never"</code>，如<a href="https://doc.rust-lang.org/nightly/cargo/reference/config.html#cache">文档</a>所述。</p>
+<p>有关更多信息，请参阅此功能的原始<a href="https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning/">不稳定公告</a>。该设计的某些部分仍不稳定，例如 <a href="https://github.com/rust-lang/cargo/issues/13060">cargo#13060</a> 中跟踪的 <code>gc</code> 子命令，因此仍有更多值得期待的内容！</p>
 <h2 id="others"><a class="header" href="#others">Others</a></h2>
-<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/04/03/Rust-1.86.0.html#stabilized-apis">原Blog</a></p>
+<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/06/26/Rust-1.88.0/#stabilized-apis">原Blog</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../appendix/rust-versions/1.85.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../appendix/rust-versions/1.87.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../appendix/rust-versions/1.87.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -291,13 +236,10 @@ let _x = &amp;*std::ptr::null::&lt;u8&gt;();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../appendix/rust-versions/1.85.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../appendix/rust-versions/1.87.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../appendix/rust-versions/1.87.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
