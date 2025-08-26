@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>1.87 - Rust语言圣经(Rust Course)</title>
+        <title>1.89 - Rust语言圣经(Rust Course)</title>
 
 
         <!-- Custom HTML head -->
@@ -148,7 +148,7 @@
                         <a href="https://github.com/sunface/rust-course" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.87.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/sunface/rust-course/edit/main/src/appendix/rust-versions/1.89.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -182,131 +182,143 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="rust-新版解读--187--十周年"><a class="header" href="#rust-新版解读--187--十周年">Rust 新版解读 | 1.87 | 十周年🎉</a></h1>
-<p><a href="https://blog.rust-lang.org/2015/05/15/Rust-1.0/">Rust 1.0</a> 十周年🎉</p>
+                        <h1 id="rust-新版解读--189--todo"><a class="header" href="#rust-新版解读--189--todo">Rust 新版解读 | 1.89 | TODO</a></h1>
 <blockquote>
-<p>Rust 1.87 官方 release doc: <a href="https://blog.rust-lang.org/2025/05/15/Rust-1.87.0/">Announcing Rust 1.87.0 | Rust Blog</a></p>
+<p>Rust 1.89 官方 release doc: <a href="https://blog.rust-lang.org/2025/08/07/Rust-1.89.0/">Announcing Rust 1.89.0 | Rust Blog</a></p>
 </blockquote>
-<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.87 版本:</p>
+<p>通过 <a href="https://www.rust-lang.org/tools/install">rustup</a> 安装的同学可以使用以下命令升级到 1.89 版本:</p>
 <pre><code class="language-shell">$ rustup update stable
 </code></pre>
-<h2 id="匿名管道"><a class="header" href="#匿名管道">匿名管道</a></h2>
-<p>1.87 版本为标准库添加了匿名管道支持，包括与 <code>std::process::Command</code> 输入/输出方法的集成。例如，现在可以相对简单地合并标准输出和标准错误流，如下所示，而过去需要额外线程或平台特定函数才能实现。</p>
+<h2 id="常量泛型的显式推断参数"><a class="header" href="#常量泛型的显式推断参数">常量泛型的显式推断参数</a></h2>
+<p>Rust现在支持在常量泛型参数中使用 <code>_</code>，从上下文推断其值：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use std::process::Command;
-use std::io::Read;
-
-let (mut recv, send) = std::io::pipe()?;
-
-let mut command = Command::new("path/to/bin")
-    // 标准输出和标准错误都会写入同一个管道，实现合并
-    .stdout(send.try_clone()?)
-    .stderr(send)
-    .spawn()?;
-
-let mut output = Vec::new();
-recv.read_to_end(&amp;mut output)?;
-
-// 必须在进程退出前读取管道内容，避免程序输出过多时填满系统缓冲区
-assert!(command.wait()?.success());
+</span>pub fn all_false&lt;const LEN: usize&gt;() -&gt; [bool; LEN] {
+  [false; _]
+}
 <span class="boring">}</span></code></pre></pre>
-<h2 id="安全的架构内置函数"><a class="header" href="#安全的架构内置函数">安全的架构内置函数</a></h2>
-<p>大多数仅因需要启用目标特性而被标记为不安全的 <code>std::arch</code> 内置函数，现在可以在已启用相应特性的安全代码中调用。例如，以下使用手动内置函数实现数组求和的示例程序，现在核心循环可以使用安全代码。</p>
+<p>与类型中使用 <code>_</code> 的规则类似，在函数签名中不允许将 <code>_</code> 作为常量泛型参数：</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span>#![forbid(unsafe_op_in_unsafe_fn)]
-
-<span class="boring">fn main() {
-</span>use std::arch::x86_64::*;
-
-fn sum(slice: &amp;[u32]) -&gt; u32 {
-    #[cfg(target_arch = "x86_64")]
-    {
-        if is_x86_feature_detected!("avx2") {
-            // 安全性：我们已检测到运行时启用了该特性，因此调用此函数是安全的
-            return unsafe { sum_avx2(slice) };
-        }
-    }
-
-    slice.iter().sum()
+</span><span class="boring">fn main() {
+</span>// 不允许这样做
+pub const fn all_false&lt;const LEN: usize&gt;() -&gt; [bool; _] {
+  [false; LEN]
 }
 
-#[target_feature(enable = "avx2")]
-#[cfg(target_arch = "x86_64")]
-fn sum_avx2(slice: &amp;[u32]) -&gt; u32 {
-    // 安全性：__m256i 和 u32 具有相同的有效性
-    let (prefix, middle, tail) = unsafe { slice.align_to::&lt;__m256i&gt;() };
-    
-    let mut sum = prefix.iter().sum::&lt;u32&gt;();
-    sum += tail.iter().sum::&lt;u32&gt;();
-    
-    // 在 1.87 中核心循环现在是完全安全的代码，因为内置函数要求与函数定义匹配的目标特性 (avx2)
-    let mut base = _mm256_setzero_si256();
-    for e in middle.iter() {
-        base = _mm256_add_epi32(base, *e);
-    }
-    
-    // 安全性：__m256i 和 u32 具有相同的有效性
-    let base: [u32; 8] = unsafe { std::mem::transmute(base) };
-    sum += base.iter().sum::&lt;u32&gt;();
-    
-    sum
+// 这个也不允许
+pub const ALL_FALSE: [bool; _] = all_false::&lt;10&gt;();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="生命周期语法不匹配的警告"><a class="header" href="#生命周期语法不匹配的警告">生命周期语法不匹配的警告</a></h2>
+<p>函数签名中的<a href="https://doc.rust-lang.org/1.89.0/book/ch10-03-lifetime-syntax.html#lifetime-elision">生命周期省略</a>是 Rust 语言的一个便利特性，但也可能成为新手和专家的绊脚石。特别是当类型中隐含生命周期但语法上不明显时：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 返回类型 `std::slice::Iter` 有一个生命周期，
+// 但是看起来没有任何提示。
+//
+// 生命周期省略推断返回类型的生命周期
+// 与 `scores` 相同。
+fn items(scores: &amp;[u8]) -&gt; std::slice::Iter&lt;u8&gt; {
+   scores.iter()
 }
 <span class="boring">}</span></code></pre></pre>
-<h2 id="asm-跳转到-rust-代码"><a class="header" href="#asm-跳转到-rust-代码"><code>asm!</code> 跳转到 Rust 代码</a></h2>
-<p>内联汇编 (<code>asm!</code>) 现在可以跳转到 Rust 代码中的 labeled 代码块。这为底层编程提供了更大灵活性，例如在操作系统内核中实现优化控制流，或更高效地与硬件交互。</p>
+<p>类似这样的代码现在会默认产生警告：</p>
+<pre><code class="language-text">warning: hiding a lifetime that's elided elsewhere is confusing
+ --&gt; src/lib.rs:1:18
+  |
+1 | fn items(scores: &amp;[u8]) -&gt; std::slice::Iter&lt;u8&gt; {
+  |                  ^^^^^     -------------------- the same lifetime is hidden here
+  |                  |
+  |                  the lifetime is elided here
+  |
+  = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+  = note: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+help: use `'_` for type paths
+  |
+1 | fn items(scores: &amp;[u8]) -&gt; std::slice::Iter&lt;'_, u8&gt; {
+  |                                             +++
+</code></pre>
+<p>我们<a href="https://github.com/rust-lang/rust/pull/46254">最初在2018年</a>尝试改进这种情况，作为 <a href="https://github.com/rust-lang/rust/issues/54910"><code>rust_2018_idioms</code></a> 警告组的一部分，但关于 <code>elided_lifetimes_in_paths</code> 警告的<a href="https://github.com/rust-lang/rust/issues/131725">强烈反馈</a>表明它过于生硬，因为它会警告那些对理解函数无关紧要的生命周期：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::fmt;
+
+struct Greeting;
+
+impl fmt::Display for Greeting {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+        //                -----^^^^^^^^^ expected lifetime parameter
+        // 知道`Formatter`有生命周期并不会帮助程序员
+        "howdy".fmt(f)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>我们随后意识到，我们想要消除的混淆发生在以下情况：</p>
+<ol>
+<li>生命周期省略推断规则将输入生命周期与输出生命周期<em>连接</em>起来</li>
+<li>语法上不明显存在生命周期</li>
+</ol>
+<p>Rust中有两种语法表明生命周期的存在：<code>&amp;</code> 和 <code>'</code>，其中 <code>'</code> 又分为推断生命周期 <code>'_</code> 和命名生命周期 <code>'a</code>。当类型使用命名生命周期时，生命周期省略不会为该类型推断生命周期。根据这些标准，我们可以构建三组：</p>
+<div class="table-wrapper"><table><thead><tr><th>明显有生命周期</th><th>允许生命周期省略推断生命周期</th><th>示例</th></tr></thead><tbody>
+<tr><td>否</td><td>是</td><td><code>ContainsLifetime</code></td></tr>
+<tr><td>是</td><td>是</td><td><code>&amp;T</code>, <code>&amp;'_ T</code>, <code>ContainsLifetime&lt;'_&gt;</code></td></tr>
+<tr><td>是</td><td>否</td><td><code>&amp;'a T</code>, <code>ContainsLifetime&lt;'a&gt;</code></td></tr>
+</tbody></table>
+</div>
+<p><code>mismatched_lifetime_syntaxes</code> 警告检查函数的输入和输出是否属于同一组。对于上面的初始示例，<code>&amp;[u8]</code> 属于第二组，而<code>std::slice::Iter&lt;u8&gt;</code> 属于第一组。我们说第一组中的生命周期是<em>隐藏的</em>。</p>
+<p>由于输入和输出生命周期属于不同组，警告会提示这个函数，减少对不明显但重要的生命周期的混淆。</p>
+<p><code>mismatched_lifetime_syntaxes</code> 警告取代了 <code>elided_named_lifetimes</code> 警告，后者专门针对命名生命周期做了类似的事情。</p>
+<p>未来对 <code>elided_lifetimes_in_paths</code> 警告的工作计划将其拆分为更集中的子警告，并考虑最终警告其中的一部分。</p>
+<h2 id="更多-x86-目标特性"><a class="header" href="#更多-x86-目标特性">更多 x86 目标特性</a></h2>
+<p><code>target_feature</code> 属性现在支持 x86 上的 <code>sha512</code>、<code>sm3</code>、<code>sm4</code>、<code>kl</code> 和 <code>widekl</code> 目标特性。此外，x86 上也支持许多 <code>avx512</code> 内部函数和目标特性：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[target_feature(enable = "avx512bw")]
+pub fn cool_simd_code(/* .. */) -&gt; /* ... */ {
+    /* ... */
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="跨平台文档测试"><a class="header" href="#跨平台文档测试">跨平台文档测试</a></h2>
+<p>现在运行 <code>cargo test --doc --target other_target</code> 时会测试文档测试，这可能会导致一些文档测试因失败而被测试出来。</p>
+<p>可以通过用 <code>ignore-&lt;target&gt;</code> 注解文档测试来禁用失败的测试（<a href="https://doc.rust-lang.org/stable/rustdoc/write-documentation/documentation-tests.html#ignoring-targets">文档</a>）：</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// ```ignore-x86_64
+/// panic!("something")
+/// ```
+pub fn my_function() { }
+<span class="boring">}</span></code></pre></pre>
+<h2 id="extern-c-函数中的-i128-和-u128"><a class="header" href="#extern-c-函数中的-i128-和-u128"><code>extern "C"</code> 函数中的 <code>i128</code> 和 <code>u128</code></a></h2>
+<p><code>i128</code> 和 <code>u128</code> 不再触发 <code>improper_ctypes_definitions</code> 警告，意味着这些类型可以在 <code>extern "C"</code> 函数中使用而不产生警告。这有一些注意事项：</p>
 <ul>
-<li><code>asm!</code> 宏现在支持 label 标签语法，作为跳转目标</li>
-<li>label 必须是返回类型为 <code>()</code> 或 <code>!</code> 的块表达式</li>
-<li>跳转时会执行该块，然后继续执行 <code>asm!</code> 块之后的代码</li>
-<li>在同一 <code>asm!</code> 里使用调用中使用 output 和 label 仍处于<a href="https://github.com/rust-lang/rust/issues/119364">unstable</a>的</li>
+<li>当类型可用时，Rust 类型与 C 中的（无符号）<code>__int128</code> 在 ABI 和布局上是兼容的。</li>
+<li>在 <code>__int128</code> 不可用的平台上，<code>i128</code> 和 <code>u128</code> 不一定与任何 C 类型对齐。</li>
+<li><code>i128</code> 不一定与任何平台上的 <code>_BitInt(128)</code> 兼容，因为 <code>_BitInt(128)</code> 和 <code>__int128</code> 可能有不同的 ABI（如在 x86-64 上）。</li>
 </ul>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>unsafe {
-    asm!(
-        "jmp {}",
-        label {
-            println!("从汇编跳转而来！");
-        }
-    );
-}
-<span class="boring">}</span></code></pre></pre>
-<p>更多细节请参阅<a href="https://doc.rust-lang.org/nightly/reference/inline-assembly.html#r-asm.operand-type.supported-operands.label">参考文档</a>。</p>
-<h2 id="特征定义中-impl-trait-的精确捕获--use"><a class="header" href="#特征定义中-impl-trait-的精确捕获--use">特征定义中 <code>impl Trait</code> 的精确捕获 (<code>+ use&lt;...&gt;</code>)</a></h2>
-<p>本版本稳定了在特征定义中使用 <code>impl Trait</code> 返回类型时指定具体捕获的泛型类型和生命周期的功能。这扩展了 <a href="https://blog.rust-lang.org/2024/10/17/Rust-1.82.0/#precise-capturing-use-syntax">1.82</a> 版本中对非特征函数的稳定支持。</p>
-<p>一些示例解语法：</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>trait Foo {
-    fn method&lt;'a&gt;(&amp;'a self) -&gt; impl Sized;
-    
-    // ... 解语法后类似：
-    type Implicit1&lt;'a&gt;: Sized;
-    fn method_desugared&lt;'a&gt;(&amp;'a self) -&gt; Self::Implicit1&lt;'a&gt;;
-    
-    // ... 而使用精确捕获时 ...
-    fn precise&lt;'a&gt;(&amp;'a self) -&gt; impl Sized + use&lt;Self&gt;;
-    
-    // ... 解语法后类似：
-    type Implicit2: Sized;
-    fn precise_desugared&lt;'a&gt;(&amp;'a self) -&gt; Self::Implicit2;
-}
-<span class="boring">}</span></code></pre></pre>
+<p>这是去年布局变更的最后一点后续工作：<a href="https://blog.rust-lang.org/2024/03/30/i128-layout-update">https://blog.rust-lang.org/2024/03/30/i128-layout-update</a>。</p>
+<h2 id="将-x86_64-apple-darwin-降级为-tier-2-并保留工具链"><a class="header" href="#将-x86_64-apple-darwin-降级为-tier-2-并保留工具链">将 <code>x86_64-apple-darwin</code> 降级为 Tier 2 并保留工具链</a></h2>
+<p>GitHub 将很快<a href="https://github.blog/changelog/2025-07-11-upcoming-changes-to-macos-hosted-runners-macos-latest-migration-and-xcode-support-policy-updates/">停止</a>为公共仓库提供免费的 macOS x86_64 运行器。苹果也宣布了<a href="https://en.wikipedia.org/wiki/Mac_transition_to_Apple_silicon#Timeline">计划</a>停止支持 x86_64 架构。</p>
+<p>根据这些变化，Rust 项目正在<a href="https://github.com/rust-lang/rfcs/pull/3841">将 <code>x86_64-apple-darwin</code> 目标</a>从<a href="https://doc.rust-lang.org/stable/rustc/platform-support.html#tier-1-with-host-tools">带工具链的 Tier 1</a>降级为<a href="https://doc.rust-lang.org/stable/rustc/platform-support.html#tier-2-with-host-tools">带工具链的 Tier 2</a>。这意味着该目标（包括 <code>rustc</code> 和 <code>cargo</code> 等工具）将保证构建，但不保证通过我们的自动化测试套件。</p>
+<p>我们预计在 Rust 1.89 和 1.90 发布之间会接受降级为带工具链的 Tier 2 的 RFC，这意味着 Rust 1.89 将是 <code>x86_64-apple-darwin</code> 作为 Tier 1 目标的最后一个 Rust 版本。</p>
+<p>对于用户来说，这一变化不会立即产生影响。只要目标保持在 Tier 2，Rust 项目仍将通过 <code>rustup</code> 或其他安装方法分发标准库和编译器的构建。不过随着时间的推移，测试覆盖率的降低可能会导致问题或兼容性下降。</p>
+<h2 id="wasm32-unknown-unknown-目标上的标准兼容c-abi"><a class="header" href="#wasm32-unknown-unknown-目标上的标准兼容c-abi"><code>wasm32-unknown-unknown</code> 目标上的标准兼容C ABI</a></h2>
+<p><code>wasm32-unknown-unknown</code> 目标上的 <code>extern "C"</code> 函数现在具有标准兼容的 ABI。更多信息请参阅这篇博客文章：<a href="https://blog.rust-lang.org/2025/04/04/c-abi-changes-for-wasm32-unknown-unknown">https://blog.rust-lang.org/2025/04/04/c-abi-changes-for-wasm32-unknown-unknown</a>。</p>
+<h2 id="平台支持"><a class="header" href="#平台支持">平台支持</a></h2>
+<ul>
+<li><a href="https://github.com/rust-lang/rfcs/pull/3841"><code>x86_64-apple-darwin</code>正在被降级为带工具链的Tier 2</a></li>
+<li><a href="https://github.com/rust-lang/rust/pull/142053">添加新的Tier-3目标<code>loongarch32-unknown-none</code>和<code>loongarch32-unknown-none-softfloat</code></a></li>
+</ul>
+<p>有关 Rust 的分层平台支持的更多信息，请参阅 Rust 的<a href="https://doc.rust-lang.org/stable/rustc/platform-support.html">平台支持页面</a>。</p>
 <h2 id="others"><a class="header" href="#others">Others</a></h2>
-<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/05/15/Rust-1.87.0/#stabilized-apis">原Blog</a></p>
+<p>其它更新细节，和稳定的 API 列表，参考<a href="https://blog.rust-lang.org/2025/08/07/Rust-1.89.0/#stabilized-apis">原Blog</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../appendix/rust-versions/1.86.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../appendix/rust-versions/1.88.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../appendix/rust-versions/1.88.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -314,13 +326,10 @@ fn sum_avx2(slice: &amp;[u32]) -&gt; u32 {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../appendix/rust-versions/1.86.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../appendix/rust-versions/1.88.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../appendix/rust-versions/1.88.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
