@@ -219,6 +219,15 @@ struct Node&lt;T&gt; {
     next: Link&lt;T&gt;,
 }
 <span class="boring">}</span></code></pre></pre>
+<p>细心的同学可能会发现，此时 <code>Link&lt;T&gt;</code> 和 <code>tail</code> 的类型 <code>*mut Node&lt;T&gt;</code> 一致了。我们可以把 <code>tail</code> 的类型也改为 <code>Link&lt;T&gt;</code> ，让代码更一致。</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct List&lt;T&gt; {
+    head: LinkT&gt;,
+    // tail: *mut Node&lt;T&gt;,
+    tail: Link&lt;T&gt;, // 新老好人卡此时一致了
+}
+<span class="boring">}</span></code></pre></pre>
 <p>请大家牢记：当使用裸指针时，<code>Option</code> 对我们是相当不友好的，所以这里不再使用。在后面还将引入 <code>NonNull</code> 类型，但是现在还无需操心。</p>
 <h2 id="基本操作"><a class="header" href="#基本操作">基本操作</a></h2>
 <p><code>List::new</code> 与之前几乎没有区别：</p>
@@ -260,33 +269,32 @@ impl&lt;T&gt; List&lt;T&gt; {
 <h3 id="示例"><a class="header" href="#示例">示例</a></h3>
 <p>将裸指针转换成 <code>Box</code> 以实现自动的清理:</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
+</span><span class="boring">fn main() {
 </span>let x = Box::new(String::from("Hello"));
 let ptr = Box::into_raw(x);
 let x = unsafe { Box::from_raw(ptr) };
 <span class="boring">}</span></code></pre></pre>
 </blockquote>
 <p>太棒了，简直为我们量身定制。而且它还很符合我们试图遵循的规则： 从安全的东东开始，将其转换成裸指针，最后再将裸指针转回安全的东东以实现安全的 drop。</p>
-<p>现在，我们就可以到处使用裸指针，也无需再注意 unsafe 的范围，反正现在都是 unsafe 了，无所谓。</p>
+<p>现在，我们就可以到处使用裸指针，只不过要注意 unsafe 的范围要尽可能小。大家可以再看下<a href="https://course.rs/advance/unsafe/intro.html#%E6%8E%A7%E5%88%B6-unsafe-%E7%9A%84%E4%BD%BF%E7%94%A8%E8%BE%B9%E7%95%8C">之前的章节</a> 巩固巩固。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn push(&amp;mut self, elem: T) {
-    unsafe {
-        // 一开始就将 Box 转换成裸指针
-        let new_tail = Box::into_raw(Box::new(Node {
-            elem: elem,
-            next: ptr::null_mut(),
-        }));
+    // 一开始就将 Box 转换成裸指针
+    let new_tail = Box::into_raw(Box::new(Node {
+        elem: elem,
+        next: ptr::null_mut(),
+    }));
 
-        if !self.tail.is_null() {
+    if !self.tail.is_null() {
+        unsafe {
             (*self.tail).next = new_tail;
-        } else {
-            self.head = new_tail;
         }
-
-        self.tail = new_tail;
+    } else {
+        self.head = new_tail;
     }
+
+    self.tail = new_tail;
 }
 <span class="boring">}</span></code></pre></pre>
 <p>嘿，都说 unsafe 不应该使用，但没想到 unsafe 真的是好！现在代码整体看起来简洁多了。</p>
@@ -298,7 +306,10 @@ let x = unsafe { Box::from_raw(ptr) };
         if self.head.is_null() {
             None
         } else {
-            let head = Box::from_raw(self.head);
+            let head;
+            unsafe {
+                head = Box::from_raw(self.head);
+            }
             self.head = head.next;
 
             if self.head.is_null() {

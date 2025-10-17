@@ -311,7 +311,7 @@ fn main() {
 <p>能够实现这一点，完全得益于 <code>Rc</code> 带来的多所有权机制，但是以上代码会报错：</p>
 <pre><code class="language-console">error[E0277]: `Rc&lt;String&gt;` cannot be sent between threads safely
 </code></pre>
-<p>表面原因是 <code>Rc&lt;T&gt;</code> 不能在线程间安全的传递，实际上是因为它没有实现 <code>Send</code> 特征，而该特征是恰恰是多线程间传递数据的关键，我们会在多线程章节中进行讲解。</p>
+<p>表面原因是 <code>Rc&lt;T&gt;</code> 不能在线程间安全的传递，实际上是因为它没有实现 <code>Send</code> 特征，而该特征恰恰是多线程间传递数据的关键，我们会在多线程章节中进行讲解。</p>
 <p>当然，还有更深层的原因：由于 <code>Rc&lt;T&gt;</code> 需要管理引用计数，但是该计数器并没有使用任何并发原语，因此无法实现原子化的计数操作，最终会导致计数错误。</p>
 <p>好在天无绝人之路，一起来看看 Rust 为我们提供的功能类似但是多线程安全的 <code>Arc</code>。</p>
 <h2 id="arc"><a class="header" href="#arc">Arc</a></h2>

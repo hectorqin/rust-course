@@ -213,7 +213,7 @@
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>这里有一个没见过的方法 <code>Rc::Try_unwrap</code> ，该方法会判断当前的 <code>Rc</code> 是否只有一个强引用，若是，则返回 <code>Rc</code> 持有的值，否则返回一个错误。</p>
+<p>这里有一个没见过的方法 <code>Rc::try_unwrap</code> ，该方法会判断当前的 <code>Rc</code> 是否只有一个强引用，若是，则返回 <code>Rc</code> 持有的值，否则返回一个错误。</p>
 <p>可以看出，我们会一直 drop 到第一个被其它链表所引用的节点：</p>
 <pre><code class="language-shell">list1 -&gt; A ---+
               |

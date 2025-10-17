@@ -379,7 +379,7 @@
 <p>Rust 是一门全新的语言，它会带给你前所未有的体验，提升你的通用编程水平，甚至于赋予你全新的编程思想。在此时此刻，大家可能还半信半疑，但是当学完它再回头看时，你肯定也会认同这些貌似浮夸的赞美。</p>
 <h2 id="避免试一试的心态"><a class="header" href="#避免试一试的心态">避免试一试的心态</a></h2>
 <p>在学习 Go、Python 等编程语言时，你可能会一边工作、一边轻松愉快的学习它们，但是 Rust 不行。原因如文章开头所说，在学习 Rust 的同时你会收获很多语言之外的知识，因此 Rust 在入门阶段比很多编程语言要更难，但是一旦入门，你将收获一个全新的自己，成为一个更加优秀的程序员。</p>
-<p>在学习过程中，一开始可能会轻松愉快，但是在开始接触 Rust 核心概念时（所有权、借用、生命周期、智能指针等），难度会陡然提升，此时就需要认真对待起来，否则会为后面埋下难以填补的坑：结果最后你可能只有两个选择 - 重新学 or 放弃。</p>
+<p>在学习过程中，一开始可能会轻松愉快，但是在开始接触 Rust 核心概念时（所有权、借用、生命周期、智能指针等），难度会陡然提升，此时就需要认真对待起来，否则会为后面埋下难以填补的坑：结果最后你可能只有两个选择 —— 重新学 or 放弃。</p>
 <p>因此，在学习过程中，给大家三点建议：</p>
 <ul>
 <li>要提前做好会遇到困难的准备，因为如上所说，学习 Rust 不仅仅是在学习一门编程语言</li>
@@ -508,7 +508,7 @@
 <p>其实对于写这种章节，我内心是拒绝的，因为真的很无趣。对于一本书而言，这也更像是一种浪费纸张的行为（好在咱无纸化 :-D）。不过没有办法，如果不安装 Rust 环境，总不能让大家用空气运行吧，so，我恶趣味的起了一个这样的章节名。</p>
 <p>在本章中，你将学习以下内容：</p>
 <ol>
-<li>在 macOS、Linux、Windows 上安装 Rust 以及相关工具链</li>
+<li>在 macOS、Linux、BSD 及 Windows 上安装 Rust 以及相关工具链</li>
 <li>搭建 VSCode 所需的环境</li>
 <li>简单介绍 Cargo</li>
 <li>实现一个酷炫多国语言版本的“世界，你好”的程序，并且谈谈对 Rust 语言的初印象</li>
@@ -931,7 +931,7 @@ World, hello
 </code></pre>
 <h3 id="修改-rust-的下载镜像为国内的镜像地址"><a class="header" href="#修改-rust-的下载镜像为国内的镜像地址">修改 Rust 的下载镜像为国内的镜像地址</a></h3>
 <p>这个效果最直接，一劳永逸，但是就是配置起来略微麻烦。</p>
-<p>为了使用 <code>crates.io</code> 之外的注册服务，我们需要对 <code>$HOME/.cargo/config.toml</code> ($CARGO_HOME 下) 文件进行配置，添加新的服务提供商，有两种方式可以实现：增加新的镜像地址和覆盖默认的镜像地址。</p>
+<p>为了使用 <code>crates.io</code> 之外的注册服务，我们需要对 <code>$HOME/.cargo/config.toml</code> (<code>$CARGO_HOME</code> 下) 文件进行配置，添加新的服务提供商，有两种方式可以实现：增加新的镜像地址和覆盖默认的镜像地址。</p>
 <h3 id="新增镜像地址"><a class="header" href="#新增镜像地址">新增镜像地址</a></h3>
 <p><strong>首先是在 <code>crates.io</code> 之外添加新的注册服务</strong>，在 <code>$HOME/.cargo/config.toml</code> （如果文件不存在则手动创建一个）中添加以下内容：</p>
 <pre><code class="language-toml">[registries]
@@ -1236,13 +1236,32 @@ error: aborting due to previous error
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="基本类型"><a class="header" href="#基本类型">基本类型</a></h1>
 <p>当一门语言不谈类型时，你得小心，这大概率是动态语言（别拍我，我承认是废话）。但是把类型大张旗鼓的用多个章节去讲的，Rust 是其中之一。</p>
-<p>Rust 每个值都有其确切的数据类型，总的来说可以分为两类：基本类型和复合类型。 基本类型意味着它们往往是一个最小化原子类型，无法解构为其它类型（一般意义上来说），由以下组成：</p>
+<p>Rust 每个值都有其确切的数据类型，总的来说可以分为两类：基本类型和复合类型。基本类型意味着它们往往是一个最小化原子类型，无法解构为其它类型（一般意义上来说），由以下组成：</p>
 <ul>
-<li>数值类型：有符号整数 (<code>i8</code>, <code>i16</code>, <code>i32</code>, <code>i64</code>, <code>isize</code>)、 无符号整数 (<code>u8</code>, <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>usize</code>) 、浮点数 (<code>f32</code>, <code>f64</code>)、以及有理数、复数</li>
-<li>字符串：字符串字面量和字符串切片 <code>&amp;str</code></li>
-<li>布尔类型：<code>true</code> 和 <code>false</code></li>
-<li>字符类型：表示单个 Unicode 字符，存储为 4 个字节</li>
-<li>单元类型：即 <code>()</code> ，其唯一的值也是 <code>()</code></li>
+<li>
+<p><strong>数值类型</strong>：</p>
+<ul>
+<li>有符号整数：<code>i8</code>， <code>i16</code>, <code>i32</code>, <code>i64</code>, <code>i128</code>, <code>isize</code></li>
+<li>无符号整数：<code>u8</code>， <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>u128</code>, <code>usize</code></li>
+<li>浮点数：<code>f32</code>（单精度）, <code>f64</code>（双精度，默认）</li>
+</ul>
+<blockquote>
+<p><strong>注意</strong>：
+<code>isize</code> 和 <code>usize</code> 的大小取决于目标平台的指针大小（32 位平台为 4 字节，64 位平台为 8 字节）</p>
+</blockquote>
+</li>
+<li>
+<p><strong>字符串切片</strong>：<code>&amp;str</code></p>
+</li>
+<li>
+<p><strong>布尔类型</strong>：<code>true</code> 和 <code>false</code></p>
+</li>
+<li>
+<p><strong>字符类型</strong>：<code>char</code> 表示单个 Unicode 字符（存储为 4 字节），如 <code>'A'</code>, <code>'中'</code>, <code>'😻'</code></p>
+</li>
+<li>
+<p><strong>单元类型</strong>：<code>()</code>，其唯一可能的值也是 <code>()</code></p>
+</li>
 </ul>
 <h2 id="类型推导与标注"><a class="header" href="#类型推导与标注">类型推导与标注</a></h2>
 <p>与 Python、JavaScript 等动态语言不同，Rust 是一门静态类型语言，也就是编译器必须在编译期知道我们所有变量的类型，但这不意味着你需要为每个变量指定类型，因为 <strong>Rust 编译器很聪明，它可以根据变量的值和上下文中的使用方式来自动推导出变量的类型</strong>，同时编译器也不够聪明，在某些情况下，它无法推导出变量类型，需要手动去给予一个类型标注，关于这一点在 <a href="https://course.rs/first-try/hello-world.html#rust-%E8%AF%AD%E8%A8%80%E5%88%9D%E5%8D%B0%E8%B1%A1">Rust 语言初印象</a> 中有过展示。</p>
@@ -1562,7 +1581,7 @@ note: run with `RUST_BACKTRACE=1` environment variable to display
     let heart_eyed_cat = '😻';
 }</code></pre></pre>
 <p>如果大家是从有年代感的编程语言过来，可能会大喊一声：这 XX 叫字符？是的，在 Rust 语言中这些都是字符，Rust 的字符不仅仅是 <code>ASCII</code>，所有的 <code>Unicode</code> 值都可以作为 Rust 字符，包括单个的中文、日文、韩文、emoji 表情符号等等，都是合法的字符类型。<code>Unicode</code> 值的范围从 <code>U+0000 ~ U+D7FF</code> 和 <code>U+E000 ~ U+10FFFF</code>。不过“字符”并不是 <code>Unicode</code> 中的一个概念，所以人在直觉上对“字符”的理解和 Rust 的字符概念并不一致。</p>
-<p>由于 <code>Unicode</code> 都是 4 个字节编码，因此字符类型也是占用 4 个字节：</p>
+<p><code>char</code>类型表示一个 <code>Unicode</code> 标量值（Unicode Scalar Value），它占用固定的 4 字节（32 位） 内存（与 UTF-32 编码单元一致）：</p>
 <pre><pre class="playground"><code class="language-rust edition2021">fn main() {
     let x = '中';
     println!("字符'中'占用了{}字节的内存大小", size_of_val(&amp;x));
@@ -1591,9 +1610,9 @@ note: run with `RUST_BACKTRACE=1` environment variable to display
 <h2 id="单元类型unit"><a class="header" href="#单元类型unit">单元类型(unit)</a></h2>
 <p>单元类型就是 <code>()</code> ，对，你没看错，就是 <code>()</code> ，唯一的值也是 <code>()</code> ，一些读者读到这里可能就不愿意了，你也太敷衍了吧，管这叫类型？</p>
 <p>只能说，再不起眼的东西，都有其用途，在目前为止的学习过程中，大家已经看到过很多次 <code>fn main()</code> 函数的使用吧？那么这个函数返回什么呢？</p>
-<p>没错， <code>main</code> 函数就返回这个单元类型 <code>()</code>，你不能说 <code>main</code> 函数无返回值，因为没有返回值的函数在 Rust 中是有单独的定义的：<code>发散函数( diverging functions )</code>，顾名思义，无法收敛的函数。</p>
+<p>没错， <code>main</code> 函数就返回这个单元类型 <code>()</code>，因此 <code>main</code> 函数有返回值，而没有返回值的函数在 Rust 中是有单独的定义的：<code>发散函数( diverging functions )（-&gt; !）</code>，顾名思义，无法收敛的函数。</p>
 <p>例如常见的 <code>println!()</code> 的返回值也是单元类型 <code>()</code>。</p>
-<p>再比如，你可以用 <code>()</code> 作为 <code>map</code> 的值，表示我们不关注具体的值，只关注 <code>key</code>。 这种用法和 Go 语言的 <em><strong>struct{}</strong></em> 类似，可以作为一个值用来占位，但是完全<strong>不占用</strong>任何内存。</p>
+<p>再比如，你可以用 <code>()</code> 作为 <code>map</code> 的值，表示我们不关注具体的值，只关注 <code>key</code>。 这种用法和 Go 语言的 <em><strong>struct{}</strong></em> 类似，可以作为一个值用来占位，但是完全<strong>不占用</strong>任何内存，内存占用为0字节。</p>
 <h2 id="课后练习-2"><a class="header" href="#课后练习-2">课后练习</a></h2>
 <blockquote>
 <p><a href="https://practice-zh.course.rs/basic-types/char-bool-unit.html">Rust By Practice</a>，支持代码在线编辑和运行，并提供详细的<a href="https://github.com/sunface/rust-by-practice/blob/master/solutions/basic-types/char-bool.md">习题解答</a>。</p>
@@ -1625,26 +1644,16 @@ let (a, c) = ("hi", false);
 </span>let b = (let a = 8);
 <span class="boring">}</span></code></pre></pre>
 <p>错误如下:</p>
-<pre><code class="language-console">error: expected expression, found statement (`let`) // 期望表达式，却发现`let`语句
- --&gt; src/main.rs:2:13
+<pre><code class="language-console">error: expected expression, found `let` statement // 期望表达式，却发现`let`语句
+ --&gt; src/main.rs:3:10
   |
-2 |     let b = let a = 8;
-  |             ^^^^^^^^^
+3 | let b = (let a = 8);
+  |          ^^^
   |
-  = note: variable declaration using `let` is a statement `let`是一条语句
-
-error[E0658]: `let` expressions in this position are experimental
-          // 下面的 `let` 用法目前是试验性的，在稳定版中尚不能使用
- --&gt; src/main.rs:2:13
-  |
-2 |     let b = let a = 8;
-  |             ^^^^^^^^^
-  |
-  = note: see issue #53667 &lt;https://github.com/rust-lang/rust/issues/53667&gt; for more information
-  = help: you can write `matches!(&lt;expr&gt;, &lt;pattern&gt;)` instead of `let &lt;pattern&gt; = &lt;expr&gt;`
+  = note: only supported directly in conditions of `if` and `while` expressions // 允许通过 if let 和 while let 语法进行模式匹配
 
 </code></pre>
-<p>以上的错误告诉我们 <code>let</code> 是语句，不是表达式，因此它不返回值，也就不能给其它变量赋值。但是该错误还透漏了一个重要的信息， <code>let</code> 作为表达式已经是试验功能了，也许不久的将来，我们在 <a href="https://course.rs/appendix/rust-version.html"><code>stable rust</code></a> 下可以这样使用。</p>
+<p>以上的错误告诉我们 <code>let</code> 是语句，不是表达式，因此它不返回值，也就不能给其它变量赋值。试图将 let 语句作为值赋给变量，违反了语法规则。</p>
 <h2 id="表达式"><a class="header" href="#表达式">表达式</a></h2>
 <p>表达式会进行求值，然后返回一个值。例如 <code>5 + 6</code>，在求值后，返回值 <code>11</code>，因此它就是一条表达式。</p>
 <p>表达式可以成为语句的一部分，例如 <code>let y = 6</code> 中，<code>6</code> 就是一个表达式，它在求值后返回一个值 <code>6</code>（有些反直觉，但是确实是表达式）。</p>
@@ -6543,7 +6552,7 @@ fn difference&lt;C: Container&gt;(container: &amp;C) {}
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>trait Container{
-    type A：Display;
+    type A: Display;
     type B;
     fn contains(&amp;self, a: &amp;Self::A, b: &amp;Self::B) -&gt; bool;
 }
@@ -7174,7 +7183,7 @@ fn main() {
 <p><a href="https://practice-zh.course.rs/collections/vector.html">Rust By Practice</a>，支持代码在线编辑和运行，并提供详细的<a href="https://github.com/sunface/rust-by-practice/blob/master/solutions/collections/Vector.md">习题解答</a>。</p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="kv-存储-hashmap"><a class="header" href="#kv-存储-hashmap">KV 存储 HashMap</a></h1>
-<p>和动态数组一样，<code>HashMap</code> 也是 Rust 标准库中提供的集合类型，但是又与动态数组不同，<code>HashMap</code> 中存储的是一一映射的 <code>KV</code> 键值对，并提供了平均复杂度为 <code>O(1)</code> 的查询方法，当我们希望通过一个 <code>Key</code> 去查询值时，该类型非常有用，以致于 Go 语言将该类型设置成了语言级别的内置特性。</p>
+<p>和动态数组一样，<code>HashMap</code> 也是 Rust 标准库中提供的集合类型，但是又与动态数组不同，<code>HashMap</code> 中存储的是一一映射的 <code>KV</code> 键值对，并提供了平均复杂度为 <code>O(1)</code> 的查询方法，当我们希望通过一个 <code>Key</code> 去查询值时，该类型非常有用，以至于 Go 语言将该类型设置成了语言级别的内置特性。</p>
 <p>Rust 中哈希类型（哈希映射）为 <code>HashMap&lt;K,V&gt;</code>，在其它语言中，也有类似的数据结构，例如 <code>hash map</code>，<code>map</code>，<code>object</code>，<code>hash table</code>，<code>字典</code> 等等，引用小品演员孙涛的一句台词：大家都是本地狐狸，别搁那装貂 :)。</p>
 <h2 id="创建-hashmap"><a class="header" href="#创建-hashmap">创建 HashMap</a></h2>
 <p>跟创建动态数组 <code>Vec</code> 的方法类似，可以使用 <code>new</code> 方法来创建 <code>HashMap</code>，然后通过 <code>insert</code> 方法插入键值对。</p>
@@ -13687,7 +13696,7 @@ impl Person {
 }</code></pre></pre>
 <p>智能指针 <code>x</code> 被 <code>*</code> 解引用为 <code>i32</code> 类型的值 <code>1</code>，然后再进行求和。</p>
 <h4 id="定义自己的智能指针"><a class="header" href="#定义自己的智能指针">定义自己的智能指针</a></h4>
-<p>现在，让我们一起来实现一个智能指针，功能上类似 <code>Box&lt;T&gt;</code>。由于 <code>Box&lt;T&gt;</code> 本身很简单，并没有包含类如长度、最大长度等信息，因此用一个元组结构体即可。</p>
+<p>现在，让我们一起来实现一个智能指针，功能上类似 <code>Box&lt;T&gt;</code>。由于 <code>Box&lt;T&gt;</code> 本身很简单，并没有包含例如长度、最大长度等信息，因此用一个元组结构体即可。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct MyBox&lt;T&gt;(T);
@@ -13780,7 +13789,7 @@ fn display(s: &amp;str) {
     let s1: &amp;str = &amp;s;
     let s2: String = s.to_string();
 }</code></pre></pre>
-<p>对于 <code>s1</code>，我们通过两次 <code>Deref</code> 将 <code>&amp;str</code> 类型的值赋给了它（<strong>赋值操作需要手动解引用</strong>）；而对于 <code>s2</code>，我们在其上直接调用方法 <code>to_string</code>，实际上 <code>MyBox</code> 根本没有没有实现该方法，能调用 <code>to_string</code>，完全是因为编译器对 <code>MyBox</code> 应用了 <code>Deref</code> 的结果（<strong>方法调用会自动解引用</strong>）。</p>
+<p>对于 <code>s1</code>，我们通过两次 <code>Deref</code> 将 <code>&amp;str</code> 类型的值赋给了它（<strong>赋值操作需要手动解引用</strong>）；而对于 <code>s2</code>，我们在其上直接调用方法 <code>to_string</code>，实际上 <code>MyBox</code> 并没有实现该方法，能调用 <code>to_string</code>，完全是因为编译器对 <code>MyBox</code> 应用了 <code>Deref</code> 的结果（<strong>方法调用会自动解引用</strong>）。</p>
 <h2 id="deref-规则总结"><a class="header" href="#deref-规则总结">Deref 规则总结</a></h2>
 <p>在上面，我们零碎的介绍了不少关于 <code>Deref</code> 特征的知识，下面来通过较为正式的方式来对其规则进行下总结。</p>
 <p>一个类型为 <code>T</code> 的对象 <code>foo</code>，如果 <code>T: Deref&lt;Target=U&gt;</code>，那么，相关 <code>foo</code> 的引用 <code>&amp;foo</code> 在应用的时候会自动转换为 <code>&amp;U</code>。</p>
@@ -14195,7 +14204,7 @@ fn main() {
 <p>能够实现这一点，完全得益于 <code>Rc</code> 带来的多所有权机制，但是以上代码会报错：</p>
 <pre><code class="language-console">error[E0277]: `Rc&lt;String&gt;` cannot be sent between threads safely
 </code></pre>
-<p>表面原因是 <code>Rc&lt;T&gt;</code> 不能在线程间安全的传递，实际上是因为它没有实现 <code>Send</code> 特征，而该特征是恰恰是多线程间传递数据的关键，我们会在多线程章节中进行讲解。</p>
+<p>表面原因是 <code>Rc&lt;T&gt;</code> 不能在线程间安全的传递，实际上是因为它没有实现 <code>Send</code> 特征，而该特征恰恰是多线程间传递数据的关键，我们会在多线程章节中进行讲解。</p>
 <p>当然，还有更深层的原因：由于 <code>Rc&lt;T&gt;</code> 需要管理引用计数，但是该计数器并没有使用任何并发原语，因此无法实现原子化的计数操作，最终会导致计数错误。</p>
 <p>好在天无绝人之路，一起来看看 Rust 为我们提供的功能类似但是多线程安全的 <code>Arc</code>。</p>
 <h2 id="arc"><a class="header" href="#arc">Arc</a></h2>
@@ -22991,10 +23000,10 @@ let t2 = tokio::spawn(async move {
 <span class="boring">}</span></code></pre></pre>
 <p>总之，在 Tokio 中我们必须要显式地引入并发和队列:</p>
 <ul>
-<li><code>tokio::spawn</code></li>
-<li><code>select!</code></li>
-<li><code>join!</code></li>
-<li><code>mpsc::channel</code></li>
+<li><code>tokio::spawn</code>  (生成新任务)</li>
+<li><code>select!</code>  (在多个 Future 中选择最先完成的一个)</li>
+<li><code>join!</code> (等待多个 Future 全部完成)</li>
+<li><code>mpsc::channel</code> (消息通道)</li>
 </ul>
 <p>当这么做时，我们需要小心的控制并发度来确保系统的安全。例如，当使用一个循环去接收 TCP 连接时，你要确保当前打开的 <code>socket</code> 数量在可控范围内，而不是毫无原则的接收连接。 再比如，当使用 <code>mpsc::channel</code> 时，要设置一个缓冲值。</p>
 <p>挑选一个合适的限制值是 <code>Tokio</code> 编程中很重要的一部分，可以帮助我们的系统更加安全、可靠的运行。</p>
@@ -33033,7 +33042,7 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>这里有一个没见过的方法 <code>Rc::Try_unwrap</code> ，该方法会判断当前的 <code>Rc</code> 是否只有一个强引用，若是，则返回 <code>Rc</code> 持有的值，否则返回一个错误。</p>
+<p>这里有一个没见过的方法 <code>Rc::try_unwrap</code> ，该方法会判断当前的 <code>Rc</code> 是否只有一个强引用，若是，则返回 <code>Rc</code> 持有的值，否则返回一个错误。</p>
 <p>可以看出，我们会一直 drop 到第一个被其它链表所引用的节点：</p>
 <pre><code class="language-shell">list1 -&gt; A ---+
               |
@@ -35759,6 +35768,15 @@ struct Node&lt;T&gt; {
     next: Link&lt;T&gt;,
 }
 <span class="boring">}</span></code></pre></pre>
+<p>细心的同学可能会发现，此时 <code>Link&lt;T&gt;</code> 和 <code>tail</code> 的类型 <code>*mut Node&lt;T&gt;</code> 一致了。我们可以把 <code>tail</code> 的类型也改为 <code>Link&lt;T&gt;</code> ，让代码更一致。</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct List&lt;T&gt; {
+    head: LinkT&gt;,
+    // tail: *mut Node&lt;T&gt;,
+    tail: Link&lt;T&gt;, // 新老好人卡此时一致了
+}
+<span class="boring">}</span></code></pre></pre>
 <p>请大家牢记：当使用裸指针时，<code>Option</code> 对我们是相当不友好的，所以这里不再使用。在后面还将引入 <code>NonNull</code> 类型，但是现在还无需操心。</p>
 <h2 id="基本操作-2"><a class="header" href="#基本操作-2">基本操作</a></h2>
 <p><code>List::new</code> 与之前几乎没有区别：</p>
@@ -35800,33 +35818,32 @@ impl&lt;T&gt; List&lt;T&gt; {
 <h3 id="示例"><a class="header" href="#示例">示例</a></h3>
 <p>将裸指针转换成 <code>Box</code> 以实现自动的清理:</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
+</span><span class="boring">fn main() {
 </span>let x = Box::new(String::from("Hello"));
 let ptr = Box::into_raw(x);
 let x = unsafe { Box::from_raw(ptr) };
 <span class="boring">}</span></code></pre></pre>
 </blockquote>
 <p>太棒了，简直为我们量身定制。而且它还很符合我们试图遵循的规则： 从安全的东东开始，将其转换成裸指针，最后再将裸指针转回安全的东东以实现安全的 drop。</p>
-<p>现在，我们就可以到处使用裸指针，也无需再注意 unsafe 的范围，反正现在都是 unsafe 了，无所谓。</p>
+<p>现在，我们就可以到处使用裸指针，只不过要注意 unsafe 的范围要尽可能小。大家可以再看下<a href="https://course.rs/advance/unsafe/intro.html#%E6%8E%A7%E5%88%B6-unsafe-%E7%9A%84%E4%BD%BF%E7%94%A8%E8%BE%B9%E7%95%8C">之前的章节</a> 巩固巩固。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn push(&amp;mut self, elem: T) {
-    unsafe {
-        // 一开始就将 Box 转换成裸指针
-        let new_tail = Box::into_raw(Box::new(Node {
-            elem: elem,
-            next: ptr::null_mut(),
-        }));
+    // 一开始就将 Box 转换成裸指针
+    let new_tail = Box::into_raw(Box::new(Node {
+        elem: elem,
+        next: ptr::null_mut(),
+    }));
 
-        if !self.tail.is_null() {
+    if !self.tail.is_null() {
+        unsafe {
             (*self.tail).next = new_tail;
-        } else {
-            self.head = new_tail;
         }
-
-        self.tail = new_tail;
+    } else {
+        self.head = new_tail;
     }
+
+    self.tail = new_tail;
 }
 <span class="boring">}</span></code></pre></pre>
 <p>嘿，都说 unsafe 不应该使用，但没想到 unsafe 真的是好！现在代码整体看起来简洁多了。</p>
@@ -35838,7 +35855,10 @@ let x = unsafe { Box::from_raw(ptr) };
         if self.head.is_null() {
             None
         } else {
-            let head = Box::from_raw(self.head);
+            let head;
+            unsafe {
+                head = Box::from_raw(self.head);
+            }
             self.head = head.next;
 
             if self.head.is_null() {

@@ -253,7 +253,7 @@ fn difference&lt;C: Container&gt;(container: &amp;C) {}
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>trait Container{
-    type A：Display;
+    type A: Display;
     type B;
     fn contains(&amp;self, a: &amp;Self::A, b: &amp;Self::B) -&gt; bool;
 }

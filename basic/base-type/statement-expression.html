@@ -209,26 +209,16 @@ let (a, c) = ("hi", false);
 </span>let b = (let a = 8);
 <span class="boring">}</span></code></pre></pre>
 <p>错误如下:</p>
-<pre><code class="language-console">error: expected expression, found statement (`let`) // 期望表达式，却发现`let`语句
- --&gt; src/main.rs:2:13
+<pre><code class="language-console">error: expected expression, found `let` statement // 期望表达式，却发现`let`语句
+ --&gt; src/main.rs:3:10
   |
-2 |     let b = let a = 8;
-  |             ^^^^^^^^^
+3 | let b = (let a = 8);
+  |          ^^^
   |
-  = note: variable declaration using `let` is a statement `let`是一条语句
-
-error[E0658]: `let` expressions in this position are experimental
-          // 下面的 `let` 用法目前是试验性的，在稳定版中尚不能使用
- --&gt; src/main.rs:2:13
-  |
-2 |     let b = let a = 8;
-  |             ^^^^^^^^^
-  |
-  = note: see issue #53667 &lt;https://github.com/rust-lang/rust/issues/53667&gt; for more information
-  = help: you can write `matches!(&lt;expr&gt;, &lt;pattern&gt;)` instead of `let &lt;pattern&gt; = &lt;expr&gt;`
+  = note: only supported directly in conditions of `if` and `while` expressions // 允许通过 if let 和 while let 语法进行模式匹配
 
 </code></pre>
-<p>以上的错误告诉我们 <code>let</code> 是语句，不是表达式，因此它不返回值，也就不能给其它变量赋值。但是该错误还透漏了一个重要的信息， <code>let</code> 作为表达式已经是试验功能了，也许不久的将来，我们在 <a href="https://course.rs/appendix/rust-version.html"><code>stable rust</code></a> 下可以这样使用。</p>
+<p>以上的错误告诉我们 <code>let</code> 是语句，不是表达式，因此它不返回值，也就不能给其它变量赋值。试图将 let 语句作为值赋给变量，违反了语法规则。</p>
 <h2 id="表达式"><a class="header" href="#表达式">表达式</a></h2>
 <p>表达式会进行求值，然后返回一个值。例如 <code>5 + 6</code>，在求值后，返回值 <code>11</code>，因此它就是一条表达式。</p>
 <p>表达式可以成为语句的一部分，例如 <code>let y = 6</code> 中，<code>6</code> 就是一个表达式，它在求值后返回一个值 <code>6</code>（有些反直觉，但是确实是表达式）。</p>

@@ -239,7 +239,7 @@ impl Person {
 }</code></pre></pre>
 <p>智能指针 <code>x</code> 被 <code>*</code> 解引用为 <code>i32</code> 类型的值 <code>1</code>，然后再进行求和。</p>
 <h4 id="定义自己的智能指针"><a class="header" href="#定义自己的智能指针">定义自己的智能指针</a></h4>
-<p>现在，让我们一起来实现一个智能指针，功能上类似 <code>Box&lt;T&gt;</code>。由于 <code>Box&lt;T&gt;</code> 本身很简单，并没有包含类如长度、最大长度等信息，因此用一个元组结构体即可。</p>
+<p>现在，让我们一起来实现一个智能指针，功能上类似 <code>Box&lt;T&gt;</code>。由于 <code>Box&lt;T&gt;</code> 本身很简单，并没有包含例如长度、最大长度等信息，因此用一个元组结构体即可。</p>
 <pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct MyBox&lt;T&gt;(T);
@@ -332,7 +332,7 @@ fn display(s: &amp;str) {
     let s1: &amp;str = &amp;s;
     let s2: String = s.to_string();
 }</code></pre></pre>
-<p>对于 <code>s1</code>，我们通过两次 <code>Deref</code> 将 <code>&amp;str</code> 类型的值赋给了它（<strong>赋值操作需要手动解引用</strong>）；而对于 <code>s2</code>，我们在其上直接调用方法 <code>to_string</code>，实际上 <code>MyBox</code> 根本没有没有实现该方法，能调用 <code>to_string</code>，完全是因为编译器对 <code>MyBox</code> 应用了 <code>Deref</code> 的结果（<strong>方法调用会自动解引用</strong>）。</p>
+<p>对于 <code>s1</code>，我们通过两次 <code>Deref</code> 将 <code>&amp;str</code> 类型的值赋给了它（<strong>赋值操作需要手动解引用</strong>）；而对于 <code>s2</code>，我们在其上直接调用方法 <code>to_string</code>，实际上 <code>MyBox</code> 并没有实现该方法，能调用 <code>to_string</code>，完全是因为编译器对 <code>MyBox</code> 应用了 <code>Deref</code> 的结果（<strong>方法调用会自动解引用</strong>）。</p>
 <h2 id="deref-规则总结"><a class="header" href="#deref-规则总结">Deref 规则总结</a></h2>
 <p>在上面，我们零碎的介绍了不少关于 <code>Deref</code> 特征的知识，下面来通过较为正式的方式来对其规则进行下总结。</p>
 <p>一个类型为 <code>T</code> 的对象 <code>foo</code>，如果 <code>T: Deref&lt;Target=U&gt;</code>，那么，相关 <code>foo</code> 的引用 <code>&amp;foo</code> 在应用的时候会自动转换为 <code>&amp;U</code>。</p>
