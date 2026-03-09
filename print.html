@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-4a1a74fa.js";
+            window.path_to_searchindex_js = "searchindex-4dbab867.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-42887675.js"></script>
@@ -1577,7 +1577,8 @@ note: run with `RUST_BACKTRACE=1` environment variable to display
 4
 5
 </code></pre>
-<p>序列只允许用于数字或字符类型，原因是：它们可以连续，同时编译器在编译期可以检查该序列是否为空，字符和数字值是 Rust 中仅有的可以用于判断是否为空的类型。如下是一个使用字符类型序列的例子：</p>
+<p>序列只允许使用数字或字符类型，原因是：它们具有离散且连续的特性（在 Rust 内部实现了 Step 特征）。这使得编译器能够明确从起点到终点的步进逻辑，并可以通过比较起点和终点的大小，在运行时判断该序列是否包含元素（即序列是否为空，例如 5..1 就是一个空序列）。</p>
+<p>如下是一个使用字符类型序列的例子：</p>
 <pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>for i in 'a'..='z' {
@@ -22409,7 +22410,7 @@ async fn main() {
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="创建异步任务"><a class="header" href="#创建异步任务">创建异步任务</a></h1>
 <p>同志们，抓稳了，我们即将换挡提速，通向 <code>mini-redis</code> 服务端的高速之路已经开启。</p>
-<p>不过在开始之前，先来做点收尾工作：上一章节中，我们实现了一个简易的 <code>mini-redis</code> 客户端并支持了 <code>SET</code>/<code>GET</code> 操作, 现在将该<a href="https://course.rs/advance-practice/getting-startted.html#分析未到代码先行">代码</a>移动到 <code>examples</code> 文件夹下，因为我们这个章节要实现的是服务器，后面可以通过运行 <code>example</code> 的方式，用之前客户端示例对我们的服务器端进行测试:</p>
+<p>不过在开始之前，先来做点收尾工作：上一章节中，我们实现了一个简易的 <code>mini-redis</code> 客户端并支持了 <code>SET</code>/<code>GET</code> 操作, 现在将该<a href="https://course.rs/advance-practice/getting-startted.html#分析未到代码先行">代码</a>移动到 <code>examples</code> 文件夹下，因为我们这个章节要实现的是服务器，后面可以通过运行 <code>examples</code> 的方式，用之前客户端示例对我们的服务器端进行测试:</p>
 <pre><code class="language-shell">$ mkdir -p examples
 $ mv src/main.rs examples/hello-redis.rs
 </code></pre>
