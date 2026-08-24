@@ -1,6 +1,8 @@
-<h1 align="center">Rust语言圣经</h1>
+<h1 align="center">Rust语言圣经 </h1> 
+
 
 <div align="center">
+    <a href="https://trendshift.io/repositories/2005?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-2005" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/2005" alt="sunface%2Frust-course | Trendshift" width="250" height="55"/></a>
     <img src="https://github.com/sunface/rust-course/blob/main/assets/banner.jpg?raw=true">
 </div>
    
@@ -25,7 +27,6 @@
 - 在线练习：https://practice.course.rs
 - AI 前沿学习：https://beatai.org 每日精选全球好文，实时、高质、有用
 
-<a href="https://trendshift.io/repositories/2005?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-2005" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/2005" alt="sunface%2Frust-course | Trendshift" width="250" height="55"/></a>
 
 ## 创作感悟
 
